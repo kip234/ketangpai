@@ -1,0 +1,17 @@
+syntax="proto3";
+option go_package="./Filter";
+package Filter;
+
+service Filter{
+  rpc Process(FilterData)returns(FilterData){};
+  rpc Add(FilterData)returns(FilterData){};
+
+}
+
+message right{
+  bool right=1;
+}
+
+message FilterData{
+  bytes data=1;
+}

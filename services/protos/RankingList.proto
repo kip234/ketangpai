@@ -1,0 +1,45 @@
+syntax="proto3";
+option go_package="./RankingList";
+package RankingList;
+
+//成员与排名：一对一
+//排名与成员：多对多
+
+service RankingList{
+  rpc flushlist(flushin)returns(flushout){};//刷新榜单-用传入的数据刷新 榜单、成员名、刷新量
+  rpc getlistinfo(listname)returns(listinfo){};//获取排行榜完整信息
+  rpc dellist(listname)returns(empty){};//删除榜单
+  rpc getranking(members)returns(rankings){};//获取排名
+}
+
+message empty{}
+
+message listname{
+  string name=1;
+}
+
+message members{
+  string name=1;//榜单名
+  repeated string members=2;
+}
+
+message rankings{
+  repeated int64 rank=1;
+}
+
+message flushin{
+  string key=1;//刷新的表
+  int32 increment=2;//刷新量
+  string member=3;//刷新对象
+
+}
+
+message flushout{
+  string member=1;//刷新对象
+  int64 ranking=2;//刷新后排名
+}
+
+message listinfo{
+  string name=1;//榜名
+  repeated string list=2;//榜单-仅对象/对象+分值、、、
+}

@@ -1,0 +1,55 @@
+syntax="proto3";
+option go_package="./UserCenter";
+package UserCenter;
+
+service UserCenter{
+  rpc creat_user(uuser) returns(uuser){};//创建用户
+  rpc get_user_info(id) returns(uuser){};//获取用户所有信息
+  rpc get_user_info_by_email(s)returns(uuser){};//参照邮箱返回用户信息
+  rpc get_user_pwd(id)returns(s){};//获取密码
+  rpc get_user_name(id)returns(s){};//获取名字
+  rpc get_user_email(id)returns(s){};//获取联系方式
+  rpc get_user_class(id)returns(id){};//获取班级
+  rpc get_user_type(id)returns(id){};//获取用户类型
+  rpc user_is_Exist(s)returns(right){};//判断用户是否存在:以邮箱为标准
+  rpc refreshing_user_data(uuser)returns(uuser){};//刷新用户数据
+
+  rpc create_class(class)returns(class){};//创建一个班级
+  rpc get_class_info(id)returns(class){};//获取班级所有信息
+  rpc get_class_teacher(id)returns(id){};//获取班级负责人ID
+  rpc get_class_name(id)returns(s){};//获取班级名字
+  rpc dissolve_class(id)returns(empty){};//解散班级
+  rpc refreshing_class_data(class)returns(class){};//更新班级数据-名字、老师
+  rpc fire_student(id)returns(class){};//将某学生从班级里面删除
+}
+
+message empty{
+}
+
+message id{
+  int32 i=1;
+}
+
+message s{
+  string s=1;
+}
+
+message right{
+  bool right=1;
+}
+
+message uuser{
+  int32 uid=2;
+  string name=1;
+  string pwd=3;
+  uint32 type=4;
+  int32 classid=5;
+  string email=6;
+}
+
+message class{
+  int32 classid=1;
+  int32 teacher=2;
+  string name=3;
+  repeated int32 students=4;
+}

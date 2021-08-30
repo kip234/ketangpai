@@ -1,0 +1,15 @@
+syntax="proto3";
+option go_package="./Email";
+package Email;
+
+service Email{
+  rpc send(mail)returns(empty){};//发邮件
+}
+
+message mail{
+  string subject=1;//主题
+  string content=2;//内容
+  string to=3;//收件人
+}
+
+message empty{}

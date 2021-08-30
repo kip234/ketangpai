@@ -1,0 +1,52 @@
+syntax="proto3";
+option go_package="./exercise";
+package exercise;
+
+service exercise{
+  rpc get_exercise(i)returns(exerciseData){};//根据考试号获取考试详情-不含题目内容
+  rpc get_exercisec(i)returns(exerciseData){};//根据考试号获取考试详情-含题目内容
+  rpc get_exercises(i)returns(stream exerciseData){};//根据班级号获取考试列表
+  rpc add_exercise(exerciseData)returns(exerciseData){};//添加一次考试
+  rpc submit_ans(submit)returns(i){};//提交一次考试记录-这里不做时间检测
+  rpc get_key(i)returns(submit){};//根据考试ID获取答案
+  rpc set_score(score)returns(empty1){};//给学生打分
+  rpc get_score(i)returns(score){};//学生根据提交记录获取本次得分
+  rpc get_scores(i)returns(stream submit){};//学生根据自己的ID获取所有提交记录
+  rpc get_class_scores(i)returns(stream score){};//老师根据考试ID获取本次班级得分情况
+  rpc get_class_submit(i)returns(stream submit){};//老师根据考试ID获取本次提交情况
+  rpc del_exercise(i)returns(empty1){};//根据考试ID删除考试记录-试题，提交记录等
+  rpc del_exercises(i)returns(empty1){};//根据班级ID删除该班级所有记录
+}
+
+message empty1{}
+
+message i{
+  int32 i=1;
+}
+
+message exerciseData{
+  int32 id=1;//数据自身ID
+  int32 classid=2;//所属班级
+  int32 ownerid=3;//发布人
+  string content=4;//内容
+  uint32 typ=5;//类型起始日期与截止日期、无时间限制、单次限时
+  int64 begin=6;//起始日期
+  int64 end=7;//截止日期
+  int64 duration=8;//持续时长
+  string name=9;//考试名
+  uint32 Discipline=10;//科目
+}
+
+message submit{//只记录最近的一次-在时限内可以多次提交
+  int32 id=1;//数据本身的ID-固定！！！
+  int32 uploaderid=2;//上传者ID
+  int32 exerciseid=3;//考试ID
+  string contents=4;//提交内容
+  int32 value=5;//得分
+}
+
+message score{
+  int32 submitid=1;//提交记录
+  int32 judge=2;//打分人
+  int32 value=3;//分值
+}

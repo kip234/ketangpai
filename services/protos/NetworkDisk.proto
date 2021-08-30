@@ -1,0 +1,35 @@
+syntax="proto3";
+option go_package="./NetworkDisk";
+package NetworkDisk;
+
+service NetworkDisk{
+  rpc download(fileid)returns(stream filestream);//下载文件
+  rpc upload(stream filestream)returns(fileinfo);//上传文件
+  rpc get_contents(classid)returns(contents);//获取文件目录
+}
+
+message fileid{
+  int32 id=1;
+}
+
+message classid{
+  int32 id=1;
+}
+
+message contents{
+  repeated string name=1;
+  repeated int32 id=2;
+}
+
+message filestream{
+  bytes content=1;
+}
+
+message fileinfo{
+  int32 id=1;
+  int32 uploader=2;
+  int32 classid=3;
+  string name=4;
+  int64 size=5;
+  int64 time=6;
+}

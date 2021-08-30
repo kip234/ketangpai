@@ -1,0 +1,8 @@
+syntax="proto3";
+//option go_package="protos";
+package protos;
+message user{
+  string name=1;
+  int32 uid=2;
+  string pwd=3;
+}

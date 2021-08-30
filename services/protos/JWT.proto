@@ -1,0 +1,19 @@
+syntax="proto3";
+option go_package="./JWT";
+package JWT;
+
+service JWT{
+  rpc refresh_token(juser) returns(token){};//刷新token
+  rpc check_token(token)returns(juser){};//检查token
+  rpc del_jwt(juser)returns(token){};//删除token
+}
+
+message token{
+  string content=1;
+}
+
+message juser{
+  string name=1;
+  int32 uid=2;
+  string pwd=3;
+}

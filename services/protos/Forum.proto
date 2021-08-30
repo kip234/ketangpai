@@ -1,0 +1,31 @@
+//留言什么的
+syntax="proto3";
+option go_package="./Forum";
+package Forum;
+
+service Forum{
+  rpc speak(message)returns(message){};//发言
+  rpc get_message(uid)returns(messages){};//查看别人给自己的留言
+  rpc get_history(classid)returns(messages){};//查看班级历史
+}
+
+message classid{
+  int32 id=1;
+}
+
+message uid{
+  int32 id=1;
+}
+
+message message{
+  int32 id=1;//自身ID
+  int32 owner=2;//发起者
+  int32 tosb=3;//对某人说的
+  string content=4;//说了啥？
+  int64 time=5;//说的时间
+  int32 classid=6;//所属班级
+}
+
+message messages{//一段话
+  repeated message m=1;
+}
