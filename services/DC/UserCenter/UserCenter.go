@@ -1,10 +1,10 @@
 package UserCenter
 
 import (
+	"KeTangPai/services/Log"
 	"context"
 	"errors"
 	"gorm.io/gorm"
-	"log"
 )
 
 type UserCenterService struct {
@@ -17,161 +17,193 @@ func newUserCenterService()*UserCenterService{//创建一个默认的服务
 }
 
 func(u *UserCenterService)CreatUser(c context.Context,user *Uuser) (*Uuser, error){
-	log.Printf("CreatUser: %+v\n",user)
+	Log.Send("UserCenter.CreatUser.info",user)
+	//log.Printf("CreatUser: %+v\n",user)
 	select {
 	case <-c.Done():
-		log.Printf("CreatUser> timeout\n")
+		Log.Send("UserCenter.CreatUser.error","timeout")
+		//log.Printf("CreatUser> timeout\n")
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
 	tmp:=Userdb{Name:user.Name,Pwd: user.Pwd,Type: user.Type,Classid: user.Classid,Email: user.Email}
 	err:=u.db.Model(&Userdb{}).Create(&tmp).Error
 	if err!=nil {
-		log.Printf("CreatUser> %s\n",err.Error())
+		Log.Send("UserCenter.CreatUser.error",err.Error())
+		//log.Printf("CreatUser> %s\n",err.Error())
 	}
 	user.Uid=tmp.Uid
 	return user, err
 }
 
 func(u *UserCenterService)GetUserInfo(c context.Context,in *Id) (*Uuser, error){
-	log.Printf("GetUserInfo: %+v\n",in)
+	Log.Send("UserCenter.GetUserInfo.info",in)
+	//log.Printf("GetUserInfo: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserInfo> timeout\n")
+		Log.Send("UserCenter.GetUserInfo.error","timeout")
+		//log.Printf("GetUserInfo> timeout\n")
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
 	user:=Uuser{}
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Find(&user).Error
 	if err!=nil {
-		log.Printf("GetUserInfo> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserInfo.error",err.Error())
+		//log.Printf("GetUserInfo> %s\n",err.Error())
 	}
 	return &user, err
 }
 
 func(u *UserCenterService)GetUserInfoByEmail(c context.Context,in *S) (*Uuser, error){
-	log.Printf("GetUserInfoByEmail: %+v\n",in)
+	Log.Send("UserCenter.GetUserInfoByEmail.info",in)
+	//log.Printf("GetUserInfoByEmail: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserInfoByEmail> timeout\n")
+		Log.Send("UserCenter.GetUserInfoByEmail.error","timeout")
+		//log.Printf("GetUserInfoByEmail> timeout\n")
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
 	user:=Uuser{}
 	err:=u.db.Model(&Userdb{}).Where("email=?",in.S).Find(&user).Error
 	if err!=nil {
-		log.Printf("GetUserInfoByEmail> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserInfoByEmail.error",err.Error())
+		//log.Printf("GetUserInfoByEmail> %s\n",err.Error())
 	}
 	return &user, err
 }
 
 func(u *UserCenterService)GetUserPwd(c context.Context,in *Id) (*S, error){
-	log.Printf("GetUserPwd: %+v\n",in)
+	//log.Printf("GetUserPwd: %+v\n",in)
+	Log.Send("UserCenter.GetUserPwd.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserPwd> timeout\n")
+		Log.Send("UserCenter.GetUserPwd.error","timeout")
+		//log.Printf("GetUserPwd> timeout\n")
 		return &S{S:""},errors.New("timeout")
 	default:
 	}
 	var pwd string
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("pwd").Find(&pwd).Error
 	if err!=nil {
-		log.Printf("GetUserPwd> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserPwd.error",err.Error())
+		//log.Printf("GetUserPwd> %s\n",err.Error())
 	}
 	return &S{S:pwd}, err
 }
 
 func(u *UserCenterService)GetUserName(c context.Context,in *Id) (*S, error){
-	log.Printf("GetUserName: %+v\n",in)
+	Log.Send("UserCenter.GetUserName.info",in)
+	//log.Printf("GetUserName: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserName> timeout\n")
+		Log.Send("UserCenter.GetUserName.error","timeout")
+		//log.Printf("GetUserName> timeout\n")
 		return &S{S:""},errors.New("timeout")
 	default:
 	}
 	var name string
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("name").Find(&name).Error
 	if err!=nil {
-		log.Printf("GetUserName> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserName.error",err.Error())
+		//log.Printf("GetUserName> %s\n",err.Error())
 	}
 	return &S{S:name},err
 }
 
 func(u *UserCenterService)GetUserEmail(c context.Context,in *Id) (*S, error){
-	log.Printf("GetUserEmail: %+v\n",in)
+	//log.Printf("GetUserEmail: %+v\n",in)
+	Log.Send("UserCenter.GetUserEmail.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserEmail> timeout\n")
+		Log.Send("UserCenter.GetUserEmail.error","timeout")
+		//log.Printf("GetUserEmail> timeout\n")
 		return &S{S:""},errors.New("timeout")
 	default:
 	}
 	var email string
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("email").Find(&email).Error
 	if err!=nil {
-		log.Printf("GetUserEmail> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserEmail.error",err.Error())
+		//log.Printf("GetUserEmail> %s\n",err.Error())
 	}
 	return &S{S:email},err
 }
 
 func(u *UserCenterService)GetUserClass(c context.Context,in *Id) (*Id, error){
-	log.Printf("GetUserClass: %+v\n",in)
+	Log.Send("UserCenter.GetUserClass.info",in)
+	//log.Printf("GetUserClass: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserClass> timeout\n")
+		Log.Send("UserCenter.GetUserClass.error","timeout")
+		//log.Printf("GetUserClass> timeout\n")
 		return &Id{I:-1},errors.New("timeout")
 	default:
 	}
 	var class int32
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("classid").Find(&class).Error
 	if err!=nil {
-		log.Printf("GetUserClass> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserClass.error",err.Error())
+		//log.Printf("GetUserClass> %s\n",err.Error())
 	}
 	return &Id{I:class},err
 }
 
 func(u *UserCenterService)GetUserType(c context.Context,in *Id) (*Id, error){
-	log.Printf("GetUserType: %+v\n",in)
+	Log.Send("UserCenter.GetUserType.info",in)
+	//log.Printf("GetUserType: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetUserType> timeout\n")
+		Log.Send("UserCenter.GetUserType.error","timeout")
+		//log.Printf("GetUserType> timeout\n")
 		return &Id{I:-1},errors.New("timeout")
 	default:
 	}
 	var typ int32
 	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("type").Find(&typ).Error
 	if err!=nil {
-		log.Printf("GetUserType> %s\n",err.Error())
+		Log.Send("UserCenter.GetUserType.error",err.Error())
+		//log.Printf("GetUserType> %s\n",err.Error())
 	}
 	return &Id{I:typ},err
 }
 
 func(u *UserCenterService)UserIs_Exist(c context.Context,in *S) (*Right, error){
-	log.Printf("UserIs_Exist: %+v\n",in)
+	Log.Send("UserCenter.UserIs_Exist.info",in)
+	//log.Printf("UserIs_Exist: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("UserIs_Exist> timeout\n")
+		Log.Send("UserCenter.UserIs_Exist.error","timeout")
+		//log.Printf("UserIs_Exist> timeout\n")
 		return &Right{Right:false},errors.New("timeout")
 	default:
 	}
 	tmpu:=Uuser{}
 	err:=u.db.Model(&Userdb{}).Where("email=?",in.S).Find(&tmpu).Error
 	if err!=nil {
-		log.Printf("UserIs_Exist> %s\n",err.Error())
+		Log.Send("UserCenter.UserIs_Exist.error",err.Error())
+		//log.Printf("UserIs_Exist> %s\n",err.Error())
 		return &Right{Right:false},err
 	}
-	return &Right{Right:true},err
+	if tmpu.Uid>0{
+		return &Right{Right:true},err
+	}
+	return &Right{Right:false},err
 }
 
 func (u *UserCenterService)RefreshingUserData(c context.Context,user *Uuser) (*Uuser, error) {
-	log.Printf("RefreshingUserData: %+v\n",user)
+	Log.Send("UserCenter.RefreshingUserData.info",user)
+	//log.Printf("RefreshingUserData: %+v\n",user)
 	select {
 	case <-c.Done():
-		log.Printf("RefreshingUserData> timeout\n")
+		Log.Send("UserCenter.RefreshingUserData.error","timeout")
+		//log.Printf("RefreshingUserData> timeout\n")
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
 	if user.GetUid()<1{
-		log.Printf("RefreshingUserData> uid illegal\n")
+		//log.Printf("RefreshingUserData> uid illegal\n")
 		return &Uuser{},errors.New("uid illegal")
 	}
 	err:=u.db.Model(&Userdb{}).Where("uid=?",user.Uid).Updates(
@@ -184,16 +216,19 @@ func (u *UserCenterService)RefreshingUserData(c context.Context,user *Uuser) (*U
 			Email:user.Email,
 		}).Error
 	if err!=nil{
-		log.Printf("RefreshingUserData> %s\n",err.Error())
+		Log.Send("UserCenter.RefreshingUserData.error",err.Error())
+		//log.Printf("RefreshingUserData> %s\n",err.Error())
 	}
 	return user,err
 }
 
 func (u *UserCenterService)CreateClass(c context.Context,class *Class) (*Class, error) {
-	log.Printf("CreateClass: %+v\n",class)
+	Log.Send("UserCenter.CreateClass.info",class)
+	//log.Printf("CreateClass: %+v\n",class)
 	select {
 	case <-c.Done():
-		log.Printf("CreateClass> timeout\n")
+		Log.Send("UserCenter.CreateClass.error","timeout")
+		//log.Printf("CreateClass> timeout\n")
 		return &Class{},errors.New("timeout")
 	default:
 	}
@@ -209,7 +244,8 @@ func (u *UserCenterService)CreateClass(c context.Context,class *Class) (*Class, 
 		return err
 	})
 	if err!=nil {
-		log.Printf("CreateClass> %s\n",err.Error())
+		Log.Send("UserCenter.CreateClass.error",err.Error())
+		//log.Printf("CreateClass> %s\n",err.Error())
 		return &Class{},err
 	}
 
@@ -233,69 +269,82 @@ func (u *UserCenterService)CreateClass(c context.Context,class *Class) (*Class, 
 		return err
 	})
 	if err!=nil {
-		log.Printf("CreateClass> %s\n",err.Error())
+		Log.Send("UserCenter.CreateClass.error",err.Error())
+		//log.Printf("CreateClass> %s\n",err.Error())
 	}
 	return class,err
 }
 
 func (u *UserCenterService)GetClassInfo(c context.Context,in *Id) (*Class, error) {
-	log.Printf("GetClassInfo: %+v\n",in)
+	Log.Send("UserCenter.GetClassInfo.info",in)
+	//log.Printf("GetClassInfo: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetClassInfo> timeout\n")
+		Log.Send("UserCenter.GetClassInfo.error","timeout")
+		//log.Printf("GetClassInfo> timeout\n")
 		return &Class{},errors.New("timeout")
 	default:
 	}
 	class:=Classdb{}
 	err:=u.db.Model(&Classdb{}).Where("classid=?",in.I).Find(&class).Error//获取基础信息
 	if err!=nil {
-		log.Printf("GetClassInfo> %s\n",err.Error())
+		Log.Send("UserCenter.GetClassInfo.error",err.Error())
+		//log.Printf("GetClassInfo> %s\n",err.Error())
 		return &Class{},err
 	}
 	err=u.db.Model(&Userdb{}).Select("uid").Where("classid=?",in.I).Find(&class.Students).Error//获取UID
 	if err!=nil {
-		log.Printf("GetClassInfo> %s\n",err.Error())
+		Log.Send("UserCenter.GetClassInfo.error",err.Error())
+		//log.Printf("GetClassInfo> %s\n",err.Error())
 	}
 	return &Class{Classid: class.Classid,Teacher: class.Teacher,Name: class.Name,Students: class.Students},err
 }
 
 func (u *UserCenterService)GetClassTeacher(c context.Context,in *Id) (*Id, error){
-	log.Printf("GetClassTeacher: %+v\n",in)
+	//log.Printf("GetClassTeacher: %+v\n",in)
+	Log.Send("UserCenter.GetClassTeacher.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetClassTeacher> timeout\n")
+		Log.Send("UserCenter.GetClassTeacher.error","timeout")
+		//log.Printf("GetClassTeacher> timeout\n")
 		return &Id{},errors.New("timeout")
 	default:
 	}
 	var teacher int32
 	err:=u.db.Model(&Classdb{}).Select("teacher").Where("classid",in.I).Find(&teacher).Error
 	if err!=nil {
-		log.Printf("GetClassTeacher> %s\n",err.Error())
+		Log.Send("UserCenter.GetClassTeacher.error",err.Error())
+		//log.Printf("GetClassTeacher> %s\n",err.Error())
 	}
 	return &Id{I:teacher},err
 }
 
 func (u *UserCenterService)GetClassName(c context.Context,in *Id) (*S, error){
-	log.Printf("GetClassName: %+v\n",in)
+	//log.Printf("GetClassName: %+v\n",in)
+	Log.Send("UserCenter.GetClassName.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetClassName> timeout\n")
+		Log.Send("UserCenter.GetClassName.error","timeout")
+		//log.Printf("GetClassName> timeout\n")
 		return &S{},errors.New("timeout")
 	default:
 	}
 	var name string
 	err:=u.db.Model(&Classdb{}).Where("classid=?",in.I).Select("name").Find(&name).Error
 	if err!=nil {
-		log.Printf("GetClassName> %s\n",err.Error())
+		Log.Send("UserCenter.GetClassName.error",err.Error())
+		//log.Printf("GetClassName> %s\n",err.Error())
 	}
 	return &S{S:name},err
 }
 
 func (u *UserCenterService)DissolveClass(c context.Context,in *Id) (*Empty, error) {
-	log.Printf("DissolveClass: %+v\n",in)
+	Log.Send("UserCenter.DissolveClass.info",in)
+	//log.Printf("DissolveClass: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("DissolveClass> timeout\n")
+		Log.Send("UserCenter.DissolveClass.error","timeout")
+		//log.Printf("DissolveClass> timeout\n")
 		return &Empty{},errors.New("timeout")
 	default:
 	}
@@ -310,16 +359,19 @@ func (u *UserCenterService)DissolveClass(c context.Context,in *Id) (*Empty, erro
 		return err
 	})
 	if err!=nil {
-		log.Printf("DissolveClass> %s\n",err.Error())
+		Log.Send("UserCenter.DissolveClass.error",err.Error())
+		//log.Printf("DissolveClass> %s\n",err.Error())
 	}
 	return &Empty{},err
 }
 
 func (u *UserCenterService)RefreshingClassData(c context.Context,in *Class) (*Class, error) {
-	log.Printf("RefreshingClassData: %+v\n",in)
+	Log.Send("UserCenter.RefreshingClassData.info",in)
+	//log.Printf("RefreshingClassData: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("RefreshingClassData> timeout\n")
+		Log.Send("UserCenter.RefreshingClassData.error","timeout")
+		//log.Printf("RefreshingClassData> timeout\n")
 		return &Class{},errors.New("timeout")
 	default:
 	}
@@ -330,16 +382,19 @@ func (u *UserCenterService)RefreshingClassData(c context.Context,in *Class) (*Cl
 			Name: in.Name,
 		}).Error
 	if err!=nil {
-		log.Printf("RefreshingClassData> %s\n",err.Error())
+		Log.Send("UserCenter.RefreshingClassData.error",err.Error())
+		//log.Printf("RefreshingClassData> %s\n",err.Error())
 	}
 	return in,err
 }
 
 func (u *UserCenterService)FireStudent(c context.Context,in *Id) (*Class, error){
-	log.Printf("FireStudent: %+v\n",in)
+	Log.Send("UserCenter.FireStudent.info",in)
+	//log.Printf("FireStudent: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("FireStudent> timeout\n")
+		Log.Send("UserCenter.FireStudent.error","timeout")
+		//log.Printf("FireStudent> timeout\n")
 		return &Class{},errors.New("timeout")
 	default:
 	}
@@ -358,7 +413,8 @@ func (u *UserCenterService)FireStudent(c context.Context,in *Id) (*Class, error)
 		return err
 	})
 	if err!=nil {
-		log.Printf("FireStudent> %s\n",err.Error())
+		Log.Send("UserCenter.FireStudent.error",err.Error())
+		//log.Printf("FireStudent> %s\n",err.Error())
 	}
 	return re,err
 }

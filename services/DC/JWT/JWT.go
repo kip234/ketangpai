@@ -2,6 +2,7 @@ package JWT
 
 import (
 	"KeTangPai/Models/Redis"
+	"KeTangPai/services/Log"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -9,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -47,9 +47,11 @@ func newJwtService()*JwtService{
 }
 
 func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
+	Log.Send("JWT.RefreshToken.info",U)
 	select {
 	case <-c.Done():
-		log.Printf("RefreshToken> timeout\n")
+		Log.Send("JWT.RefreshToken.error","timeout")
+		//log.Printf("RefreshToken> timeout\n")
 		return &Token{},errors.New("timeout")
 	default:
 	}
@@ -57,13 +59,15 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 	DefaultJwt.Payload.Iat=time.Now().Unix()
 	header,err:=json.Marshal(DefaultJwt.Header)
 	if err!=nil {
-		log.Printf("RefreshToken> %s\n",err.Error())
+		Log.Send("JWT.RefreshToken.error",err.Error())
+		//log.Printf("RefreshToken> %s\n",err.Error())
 		return &Token{Content: ""},err
 	}
 	Header1:=base64.StdEncoding.EncodeToString(header)
 	payload,err:=json.Marshal(DefaultJwt.Payload)
 	if err!=nil {
-		log.Printf("RefreshToken> %s\n",err.Error())
+		Log.Send("JWT.RefreshToken.error",err.Error())
+		//log.Printf("RefreshToken> %s\n",err.Error())
 		return &Token{Content: ""},err
 	}
 
@@ -75,52 +79,61 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 	t:=Token{Content: Header1+"."+Payload1+"."+base64.StdEncoding.EncodeToString(hash.Sum(nil))}
 	err=j.redis.SET(U.GetUid(),t.Content)
 	if err!=nil {
-		log.Printf("RefreshToken> %s\n",err.Error())
+		Log.Send("JWT.RefreshToken.error",err.Error())
+		//log.Printf("RefreshToken> %s\n",err.Error())
 	}
 	return &t,err
 }
 
 func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
+	Log.Send("JWT.CheckToken.info",t)
 	select {
 	case <-c.Done():
-		log.Printf("CheckToken> timeout\n")
+		Log.Send("JWT.CheckToken.error","timeout")
+		//log.Printf("CheckToken> timeout\n")
 		return &Juser{},errors.New("timeout")
 	default:
 	}
 	hps:=strings.Split(t.Content,".")//分割token的三部分
 	if len(hps)!=3 {//长度不够？
-		log.Printf("CheckToken> RefreshHP Signature error\n")
+		//Log.Send("JWT.CheckToken.error",err.Error())
+		//log.Printf("CheckToken> RefreshHP Signature error\n")
 		return &Juser{},fmt.Errorf("RefreshHP Signature error")
 	}
 
 	p,err:=base64.StdEncoding.DecodeString(hps[1])//反序列化paylo
 	if err!=nil{
-		log.Printf("CheckToken> %s\n",err.Error())
+		Log.Send("JWT.CheckToken.error",err.Error())
+		//log.Printf("CheckToken> %s\n",err.Error())
 		return &Juser{},err
 	}
 	err = json.Unmarshal(p,&DefaultJwt.Payload)
 	r,err:=j.redis.GET(strconv.Itoa(int(DefaultJwt.Payload.Aud)))//查找token记录
 	if err!=nil{
-		log.Printf("CheckToken> %s\n",err.Error())
+		Log.Send("JWT.CheckToken.error",err.Error())
+		//log.Printf("CheckToken> %s\n",err.Error())
 		return &Juser{},err
 	}
 	if r!=t.Content{//与记录不符
-		log.Printf("CheckToken> inconsistent with record\n")
+		//log.Printf("CheckToken> inconsistent with record\n")
 		return &Juser{},errors.New("inconsistent with record")
 	}
 	return &Juser{Uid: DefaultJwt.Payload.Aud},err
 }
 
 func (j *JwtService) DelJwt(c context.Context,in *Juser) (*Token, error){
+	Log.Send("JWT.DelJwt.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("DelJwt> timeout\n")
+		Log.Send("JWT.DelJwt.error","timeout")
+		//log.Printf("DelJwt> timeout\n")
 		return &Token{},errors.New("timeout")
 	default:
 	}
 	err:=j.redis.DEL(strconv.Itoa(int(in.Uid)))
 	if err!=nil {
-		log.Printf("DelJwt> %s\n",err.Error())
+		Log.Send("JWT.DelJwt.error",err.Error())
+		//log.Printf("DelJwt> %s\n",err.Error())
 	}
 	return &Token{},err
 }

@@ -2,6 +2,7 @@ package RankingList
 
 import (
 	"KeTangPai/Models/Redis"
+	"KeTangPai/services/Log"
 	"context"
 	"errors"
 	"log"
@@ -20,14 +21,17 @@ func newRankingListService() (re *RankingListService) {
 }
 
 func (r *RankingListService)Flushlist(c context.Context,in *Flushin) (f *Flushout,err error){
+	Log.Send("RankingList.Flushlist.info",in)
 	defer func(){
 		if err!=nil {
-			log.Printf("Flushlist> %s\n",err.Error())
+			Log.Send("RankingList.Flushlist.error",err.Error())
+			//log.Printf("Flushlist> %s\n",err.Error())
 		}
 	}()
-	log.Printf("Flushlist: %+v\n",in)
+	//log.Printf("Flushlist: %+v\n",in)
 	select {
 	case <-c.Done():
+		Log.Send("RankingList.Flushlist.error","timeout")
 		log.Printf("Flushlist> timeout\n")
 		return &Flushout{},errors.New("timeout")
 	default:
@@ -44,15 +48,18 @@ func (r *RankingListService)Flushlist(c context.Context,in *Flushin) (f *Flushou
 }
 
 func (r *RankingListService)Getlistinfo(c context.Context,in *Listname) (l *Listinfo,err error){
+	Log.Send("RankingList.Getlistinfo.info",in)
 	defer func(){
 		if err!=nil {
-			log.Printf("Getlistinfo> %s\n",err.Error())
+			Log.Send("RankingList.Getlistinfo.error",err.Error())
+			//log.Printf("Getlistinfo> %s\n",err.Error())
 		}
 	}()
-	log.Printf("Getlistinfo: %+v\n",in)
+	//log.Printf("Getlistinfo: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("Getlistinfo> timeout\n")
+		Log.Send("RankingList.Getlistinfo.error","timeout")
+		//log.Printf("Getlistinfo> timeout\n")
 		return &Listinfo{},errors.New("timeout")
 	default:
 	}
@@ -68,13 +75,16 @@ func (r *RankingListService)Getlistinfo(c context.Context,in *Listname) (l *List
 func (r *RankingListService)Dellist(c context.Context,in *Listname) (e *Empty,err error){
 	defer func(){
 		if err!=nil {
-			log.Printf("Dellist> %s\n",err.Error())
+			Log.Send("RankingList.Dellist.error",err.Error())
+			//log.Printf("Dellist> %s\n",err.Error())
 		}
 	}()
-	log.Printf("Dellist: %+v\n",in)
+	//log.Printf("Dellist: %+v\n",in)
+	Log.Send("RankingList.Dellist.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("Dellist> timeout\n")
+		Log.Send("RankingList.Dellist.error","timeout")
+		//log.Printf("Dellist> timeout\n")
 		return &Empty{},errors.New("timeout")
 	default:
 	}
@@ -85,13 +95,16 @@ func (r *RankingListService)Dellist(c context.Context,in *Listname) (e *Empty,er
 func (r *RankingListService)Getranking(c context.Context,in *Members) (ranks *Rankings,err error){
 	defer func(){
 		if err!=nil {
-			log.Printf("Getranking: %s\n",err.Error())
+			Log.Send("RankingList.Getranking.error",err.Error())
+			//log.Printf("Getranking: %s\n",err.Error())
 		}
 	}()
-	log.Printf("Getranking> %+v\n",in)
+	//log.Printf("Getranking> %+v\n",in)
+	Log.Send("RankingList.Getranking.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("Getranking> timeout\n")
+		//log.Printf("Getranking> timeout\n")
+		Log.Send("RankingList.Getranking.error","timeout")
 		return &Rankings{},errors.New("timeout")
 	default:
 	}

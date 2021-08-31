@@ -3,7 +3,6 @@ package Exercise
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 const Addr		= ":8082"
@@ -36,8 +35,8 @@ const (
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="root"
-	SqlAddr="127.0.0.1:3306"
+	SqlUserPwd="123456"
+	SqlAddr=":3306"
 )
 
 type Exercisedb struct{
@@ -67,7 +66,7 @@ func InitGorm() {
 	dsn := SqlUserName+":"+SqlUserPwd+"@tcp("+SqlAddr+")/"+SqlName+"?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	sql,err=gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger:logger.Default.LogMode(logger.Info),
+		//Logger:logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		panic(err)

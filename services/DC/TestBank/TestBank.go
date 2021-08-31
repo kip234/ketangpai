@@ -1,13 +1,13 @@
 package TestBank
 
 import (
+	"KeTangPai/services/Log"
 	"context"
 	"encoding/json"
 	"errors"
 	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -24,10 +24,12 @@ func newTestBankService() *TestBankService {
 }
 
 func (t *TestBankService)Upload(c context.Context,in *Test) (*Test, error){
-	log.Printf("Upload: %+v\n",in)
+	Log.Send("TestBank.Upload.info",in)
+	//log.Printf("Upload: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("Upload> timeout\n")
+		Log.Send("TestBank.Upload.error","timeout")
+		//log.Printf("Upload> timeout\n")
 		return &Test{}, errors.New("timeout")
 	default:
 	}
@@ -55,7 +57,8 @@ func (t *TestBankService)Upload(c context.Context,in *Test) (*Test, error){
 		return nil
 	})
 	if err!=nil {
-		log.Printf("Upload> %s\n",err.Error())
+		Log.Send("TestBank.Upload.error",err.Error())
+		//log.Printf("Upload> %s\n",err.Error())
 		return &Test{},err
 	}
 	in.Id=tmp.Id
@@ -69,51 +72,60 @@ func (t *TestBankService)Download(stream TestBank_DownloadServer) error{
 			return nil
 		}
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 		var location string
 		err=t.db.Model(Testdb{}).Where("id=?",id.Id).Select("location").Find(&location).Error
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 		file,err:=os.Open(location)
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 		c,err:=ioutil.ReadAll(file)
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 		T:=Test{}
 		err=json.Unmarshal(c,&T)
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 		err=stream.Send(&T)
 		if err!=nil{
-			log.Printf("Downloadc> %s\n",err.Error())
+			Log.Send("TestBank.Download.error",err.Error())
+			//log.Printf("Downloadc> %s\n",err.Error())
 			return err
 		}
 	}
 }
 //自动生成一套试卷
 func (t *TestBankService)GenerateTest(in *Testconf,stream TestBank_GenerateTestServer) error{
-	log.Printf("GenerateTest: %+v\n",in)
+	Log.Send("TestBank.GenerateTest.info",in)
+	//log.Printf("GenerateTest: %+v\n",in)
 	var  subjective []int32
 	var  objective []int32
 	err:=t.db.Model(Testdb{}).Where(Testdb{Typ: Subjective,Discipline: in.Discipline}).Select("id").Find(&subjective).Error
 	if err!=nil {
-		log.Printf("GenerateTest> %s\n",err.Error())
+		Log.Send("TestBank.GenerateTest.error",err.Error())
+		//log.Printf("GenerateTest> %s\n",err.Error())
 		return err
 	}
 	err=t.db.Model(Testdb{}).Where(Testdb{Typ: Objective,Discipline: in.Discipline}).Select("id").Find(&objective).Error
 	if err!=nil {
-		log.Printf("GenerateTest> %s\n",err.Error())
+		Log.Send("TestBank.GenerateTest.error",err.Error())
+		//log.Printf("GenerateTest> %s\n",err.Error())
 		return err
 	}
 
@@ -122,7 +134,8 @@ func (t *TestBankService)GenerateTest(in *Testconf,stream TestBank_GenerateTestS
 		rand.Seed(time.Now().UnixNano())
 		err=stream.Send(&Testid{Id: objective[step*(int(in.ObjectiveItem)-1)+rand.Intn(step)]})
 		if err!=nil {
-			log.Printf("GenerateTest> %s\n",err.Error())
+			Log.Send("TestBank.GenerateTest.error",err.Error())
+			//log.Printf("GenerateTest> %s\n",err.Error())
 			return err
 		}
 		in.ObjectiveItem-=1
@@ -133,7 +146,8 @@ func (t *TestBankService)GenerateTest(in *Testconf,stream TestBank_GenerateTestS
 		rand.Seed(time.Now().UnixNano())
 		err=stream.Send(&Testid{Id: subjective[step*(int(in.SubjectiveItem)-1)+rand.Intn(step)]})
 		if err!=nil {
-			log.Printf("GenerateTest> %s\n",err.Error())
+			Log.Send("TestBank.GenerateTest.error",err.Error())
+			//log.Printf("GenerateTest> %s\n",err.Error())
 			return err
 		}
 		in.SubjectiveItem-=1

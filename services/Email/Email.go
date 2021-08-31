@@ -1,9 +1,9 @@
 package Email
 
 import (
+	"KeTangPai/services/Log"
 	"context"
 	"errors"
-	"log"
 	"net/smtp"
 	"strings"
 )
@@ -19,16 +19,14 @@ func newEmailService()*EmailService{
 }
 
 func (e *EmailService)Send(c context.Context,in *Mail) (re *Empty,err error){
-	log.Printf("Send: %+v\n",in)
-	defer func(){
-		if err != nil{
-			log.Printf("Send> %s\n",err.Error())
-		}
-	}()
-	log.Printf("Send: %+v\n",in)
+	Log.Send("Email.Send.info",in)
+	//log.Printf("Send: %+v\n",in)
+	//log.Printf("Send: %+v\n",in)
+
 	select {
 	case <-c.Done():
-		log.Printf("Send> timeout\n")
+		Log.Send("Email.Send.error","timeout")
+		//log.Printf("Send> timeout\n")
 		return &Empty{},errors.New("timeout")
 	default:
 	}
@@ -37,6 +35,9 @@ func (e *EmailService)Send(c context.Context,in *Mail) (re *Empty,err error){
 	msg := []byte("To: " + in.To + "\r\nFrom: " + e.user + "\r\nSubject: " +in.Subject+ "\r\n" + "Content-Type: text/html; charset=UTF-8" + "\r\n\r\n" + in.Content)
 	to:=strings.Split(in.To,";")
 	err=smtp.SendMail(e.host,auth,e.user,to,msg)
+	if err!=nil {
+		Log.Send("Email.Send.error",err.Error())
+	}
 	return &Empty{},err
 }
 

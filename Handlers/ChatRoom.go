@@ -72,7 +72,7 @@ func ChatRoom(f Filter.FilterClient,rooms map[int32]*Models.Room,r RankingList.R
 					ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
 					_,err=r.Dellist(ctx,&RankingList.Listname{Name: classname})//清空榜单
 				}
-				//log.Printf("ChatRoom> leave %d\n",rooms[classid].ConnNum())
+				//Log.Printf("ChatRoom> leave %d\n",rooms[classid].ConnNum())
 			}()
 			in:=Models.In{}
 			out:=Models.Out{

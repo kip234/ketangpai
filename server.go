@@ -10,6 +10,7 @@ import (
 	"KeTangPai/services/Email"
 	"KeTangPai/services/Filter"
 	"KeTangPai/services/Forum"
+	"KeTangPai/services/Log"
 	"KeTangPai/services/RankingList"
 )
 
@@ -23,6 +24,7 @@ func main()  {
 	go Forum.Run()
 	go RankingList.Run()
 	go Email.Run()
+	Log.Run()
 
 	rooms:=make(map[int32]*Models.Room)
 

@@ -1,3 +1,10 @@
 *.exc
 *.sub
 !.explain
+/compiled/
+/exercise/
+/files/
+/logs/
+/submit/
+/test/
+

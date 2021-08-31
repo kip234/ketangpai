@@ -63,6 +63,12 @@ func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.Han
 		rand.Seed(time.Now().Unix())
 		code:=rand.Int()%1e6
 		_,err=e.Send(context.Background(),&Email.Mail{Subject: subject,To: user.Email,Content: fmt.Sprintf(body,code)})
+		if err != nil {
+			panic(err)
+			conn.WriteJSON(err)
+			cancle()
+			return
+		}
 		err=conn.WriteMessage(websocket.TextMessage,[]byte(fmt.Sprintf("验证码已发送给%s请在%d秒内提交验证码",user.Email,emailTimeLimit)))
 		if err != nil {
 			panic(err)

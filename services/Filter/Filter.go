@@ -2,10 +2,10 @@ package Filter
 
 import (
 	"KeTangPai/services/Filter/prefix_tree"
+	"KeTangPai/services/Log"
 	"context"
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -16,9 +16,11 @@ type Filter struct{
 }
 
 func (f *Filter)Add(c context.Context,arg *FilterData)(*FilterData, error){
+	Log.Send("Filter.Add.info",arg)
 	select {
 	case <-c.Done():
-		log.Printf("Add> timeout\n")
+		Log.Send("Filter.Add.error","timeout")
+		//log.Printf("Add> timeout\n")
 		return &FilterData{},errors.New("timeout")
 	default:
 	}
@@ -27,9 +29,11 @@ func (f *Filter)Add(c context.Context,arg *FilterData)(*FilterData, error){
 }
 
 func (f *Filter)Process(c context.Context,arg *FilterData) (*FilterData, error) {
+	Log.Send("Filter.Process.info",arg)
 	select {
 	case <-c.Done():
-		log.Printf("Process> timeout\n")
+		Log.Send("Filter.Process.error","timeout")
+		//log.Printf("Process> timeout\n")
 		return &FilterData{},errors.New("timeout")
 	default:
 	}

@@ -3,7 +3,6 @@ package Forum
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type Messagedb struct{
@@ -23,8 +22,8 @@ const Addr="localhost:8089"
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="root"
-	SqlAddr="127.0.0.1:3306"
+	SqlUserPwd="123456"
+	SqlAddr=":3306"
 )
 
 
@@ -32,7 +31,7 @@ func InitGorm() {
 	dsn := SqlUserName+":"+SqlUserPwd+"@tcp("+SqlAddr+")/"+SqlName+"?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	DB,err=gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger:logger.Default.LogMode(logger.Info),
+		//Logger:logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		panic(err)

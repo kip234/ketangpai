@@ -1,12 +1,12 @@
 package NetworkDisk
 
 import (
+	"KeTangPai/services/Log"
 	"context"
 	"encoding/json"
 	"errors"
 	"gorm.io/gorm"
 	"io"
-	"log"
 	"os"
 )
 
@@ -21,12 +21,14 @@ func newNetworkDiskService() *NetworkDiskService {
 }
 
 func (n *NetworkDiskService)Download(in *Fileid,stream NetworkDisk_DownloadServer) error{
-	log.Printf("Download: %+v\n",in)
+	Log.Send("NetworkDisk.Download.info",in)
+	//log.Printf("Download: %+v\n",in)
 
 	tmp :=fileinfodb{}
 	err:=n.db.Model(fileinfodb{}).Where("id=?",in.Id).Find(&tmp).Error
 	if err!=nil {
-		log.Printf("Download> %s\n",err.Error())
+		Log.Send("NetworkDisk.Download.error","timeout")
+		//log.Printf("Download> %s\n",err.Error())
 		return err
 	}
 
@@ -40,13 +42,15 @@ func (n *NetworkDiskService)Download(in *Fileid,stream NetworkDisk_DownloadServe
 	}
 	b,err:=json.Marshal(info)
 	if err!=nil {
-		log.Printf("Download> %s\n",err.Error())
+		Log.Send("NetworkDisk.Download.error",err.Error())
+		//log.Printf("Download> %s\n",err.Error())
 		return err
 	}
 	stream.Send(&Filestream{Content: b})//先把文件信息法过去
 	file,err:=os.Open(tmp.Location)
 	if err!=nil {
-		log.Printf("Download> %s\n",err.Error())
+		Log.Send("NetworkDisk.Download.error",err.Error())
+		//log.Printf("Download> %s\n",err.Error())
 		return err
 	}
 	defer file.Close()
@@ -57,12 +61,14 @@ func (n *NetworkDiskService)Download(in *Fileid,stream NetworkDisk_DownloadServe
 			break
 		}
 		if err!=nil {
-			log.Printf("Download> %s\n",err.Error())
+			Log.Send("NetworkDisk.Download.error",err.Error())
+			//log.Printf("Download> %s\n",err.Error())
 			return err
 		}
 		err=stream.Send(&Filestream{Content: uints})
 		if err!=nil {
-			log.Printf("Download> %s\n",err.Error())
+			Log.Send("NetworkDisk.Download.error",err.Error())
+			//log.Printf("Download> %s\n",err.Error())
 			return err
 		}
 	}
@@ -73,26 +79,31 @@ func (n *NetworkDiskService)Upload(stream NetworkDisk_UploadServer) error {
 	in := Fileinfo{}
 	b, err := stream.Recv()
 	if err != nil {
+		Log.Send("NetworkDisk.Upload.error",err.Error())
 		return err
 	}
 	err = json.Unmarshal(b.Content, &in)
 	if err != nil {
+		Log.Send("NetworkDisk.Upload.error",err.Error())
 		return err
 	}
 	tmp := fileinfodb{Uploader: in.Uploader, Classid: in.Classid, Name: in.Name, Size: in.Size, Time: in.Time}
 	err = n.db.Transaction(func(tx *gorm.DB) error {
 		err = tx.Model(fileinfodb{}).Create(&tmp).Error
 		if err != nil {
+			Log.Send("NetworkDisk.Upload.error",err.Error())
 			return err
 		}
 		tmp.Location = "./files/" + tmp.Name
 		err = tx.Model(fileinfodb{}).Where("id=?", tmp.Id).Update("location", tmp.Location).Error
 		if err != nil {
+			Log.Send("NetworkDisk.Upload.error",err.Error())
 			return err
 		}
 		in.Id = tmp.Id
 		file, err := os.Create(tmp.Location)
 		if err != nil {
+			Log.Send("NetworkDisk.Upload.error",err.Error())
 			return err
 		}
 		defer file.Close()
@@ -102,6 +113,7 @@ func (n *NetworkDiskService)Upload(stream NetworkDisk_UploadServer) error {
 				break
 			}
 			if err != nil {
+				Log.Send("NetworkDisk.Upload.error",err.Error())
 				return err
 			}
 			file.Write(b.Content)
@@ -109,23 +121,27 @@ func (n *NetworkDiskService)Upload(stream NetworkDisk_UploadServer) error {
 		return nil
 	})
 	if err != nil {
-		log.Printf("Upload> %s\n", err.Error())
+		Log.Send("NetworkDisk.Upload.error",err.Error())
+		//log.Printf("Upload> %s\n", err.Error())
 	}
 	return err
 }
 
 func (n *NetworkDiskService)GetContents(c context.Context,in *Classid) (*Contents, error){
-	log.Printf("Upload: %+v\n",in)
+	Log.Send("NetworkDisk.GetContents.info",in)
+	//log.Printf("Upload: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("Upload> timeout\n")
+		Log.Send("NetworkDisk.GetContents.error","timeout")
+		//log.Printf("Upload> timeout\n")
 		return &Contents{},errors.New("timeout")
 	default:
 	}
 	var tmp []fileinfodb
 	err:=n.db.Model(fileinfodb{}).Where("classid=?",in.Id).Find(&tmp).Error
 	if err!=nil {
-		log.Printf("GetContents> %s\n",err.Error())
+		Log.Send("NetworkDisk.GetContents.error",err.Error())
+		//log.Printf("GetContents> %s\n",err.Error())
 		return &Contents{},err
 	}
 	var re Contents

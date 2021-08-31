@@ -7,6 +7,7 @@ require (
 	github.com/gomodule/redigo v1.8.5
 	github.com/gorilla/websocket v1.4.2
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.6.1 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/text v0.3.5 // indirect

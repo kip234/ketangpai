@@ -1,11 +1,11 @@
 package Exercise
 
 import (
+	"KeTangPai/services/Log"
 	"context"
 	"errors"
 	"gorm.io/gorm"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 )
@@ -21,10 +21,12 @@ func newExerciseService()*ExerciseService{
 
 //根据考试号获取考试详情-不含题目内容
 func(e *ExerciseService)GetExercise(c context.Context,in *I) (*ExerciseData, error){
-	log.Printf("GetExercise: %+v\n",in)
+	Log.Send("Exercise.GetExercise.info",in)
+	//log.Printf("GetExercise: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetExercise> timeout\n")
+		Log.Send("Exercise.GetExercise.error","GetExercise> timeout")
+		//log.Printf("GetExercise> timeout\n")
 		return &ExerciseData{},errors.New("timeout")
 	default:
 	}
@@ -32,7 +34,8 @@ func(e *ExerciseService)GetExercise(c context.Context,in *I) (*ExerciseData, err
 	re:=Exercisedb{}
 	err:=e.db.Model(Exercisedb{}).Where("id=?",in.I).Find(&re).Error
 	if err!=nil{
-		log.Printf("GetExercise> %s\n",err.Error())
+		Log.Send("Exercise.GetExercise.error",err.Error())
+		//log.Printf("GetExercise> %s\n",err.Error())
 		return &ExerciseData{},err
 	}
 	return &ExerciseData{
@@ -48,10 +51,12 @@ func(e *ExerciseService)GetExercise(c context.Context,in *I) (*ExerciseData, err
 }
 //根据考试号获取考试详情-含题目内容
 func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, error){
-	log.Printf("GetExercisec: %+v\n",in)
+	//log.Printf("GetExercisec: %+v\n",in)
+	Log.Send("Exercise.GetExercisec.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetExercisec> timeout\n")
+		//log.Printf("GetExercisec> timeout\n")
+		Log.Send("Exercise.GetExercisec.error","timeout")
 		return &ExerciseData{},errors.New("timeout")
 	default:
 	}
@@ -59,24 +64,28 @@ func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, er
 	var location string
 	err:=e.db.Model(Exercisedb{}).Where("id=?",in.I).Select("location").Find(&location).Error
 	if err!=nil{
-		log.Printf("GetExercisec> %s\n",err.Error())
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		//log.Printf("GetExercisec> %s\n",err.Error())
 		return &ExerciseData{},err
 	}
 	//获取考试信息
 	re:=Exercisedb{}
 	err=e.db.Model(Exercisedb{}).Where("id=?",in.I).Find(&re).Error
 	if err!=nil{
-		log.Printf("GetExercisec> %s\n",err.Error())
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		//log.Printf("GetExercisec> %s\n",err.Error())
 		return &ExerciseData{},err
 	}
 	file,err:=os.Open(location)
 	if err!=nil{
-		log.Printf("GetExercisec> %s\n",err.Error())
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		//log.Printf("GetExercisec> %s\n",err.Error())
 		return &ExerciseData{},err
 	}
 	b,err:=ioutil.ReadAll(file)
 	if err!=nil{
-		log.Printf("GetExercisec> %s\n",err.Error())
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		//log.Printf("GetExercisec> %s\n",err.Error())
 		return &ExerciseData{},err
 	}
 	return &ExerciseData{
@@ -93,22 +102,26 @@ func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, er
 }
 //根据班级号获取考试列表
 func(e *ExerciseService)GetExercises(in *I,stream Exercise_GetExercisesServer) error{
-	log.Printf("GetExercises: %+v\n",in)
+	Log.Send("Exercise.GetExercises.info",in)
+	//log.Printf("GetExercises: %+v\n",in)
 	var A []int32//考试ID列表
 	err:=e.db.Model(Exercisedb{}).Where("classid=?",in.I).Select("id").Find(&A).Error
 	if err!=nil {
-		log.Printf("GetExercises> %s\n",err.Error())
+		Log.Send("Exercise.GetExercises.error",err.Error())
+		//log.Printf("GetExercises> %s\n",err.Error())
 		return err
 	}
 	for _,i:=range A{
 		re,err:=e.GetExercise(context.Background(),&I{I:i})
 		if err!=nil {
-			log.Printf("GetExercises> %s\n",err.Error())
+			//log.Printf("GetExercises> %s\n",err.Error())
+			Log.Send("Exercise.GetExercises.error",err.Error())
 			return err
 		}
 		err=stream.Send(re)
 		if err!=nil {
-			log.Printf("GetExercises> %s\n",err.Error())
+			Log.Send("Exercise.GetExercises.error",err.Error())
+			//log.Printf("GetExercises> %s\n",err.Error())
 			return err
 		}
 	}
@@ -116,10 +129,12 @@ func(e *ExerciseService)GetExercises(in *I,stream Exercise_GetExercisesServer) e
 }
 //添加一次考试
 func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*ExerciseData, error){
-	log.Printf("AddExercise: %+v\n",in)
+	//log.Printf("AddExercise: %+v\n",in)
+	Log.Send("Exercise.AddExercise.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetExercise> timeout\n")
+		//log.Printf("GetExercise> timeout\n")
+		Log.Send("Exercise.AddExercise.error","timeout")
 		return &ExerciseData{},errors.New("timeout")
 	default:
 	}
@@ -147,16 +162,19 @@ func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*Exerci
 		return nil
 	})
 	if err!=nil {
-		log.Printf("AddExercise> %s\n",err.Error())
+		Log.Send("Exercise.AddExercise.error",err.Error())
+		//log.Printf("AddExercise> %s\n",err.Error())
 	}
 	return in,err
 }
 //学生提交一次考试记录
 func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
-	log.Printf("SubmitAns: %+v\n",in)
+	Log.Send("Exercise.SubmitAns.info",in)
+	//log.Printf("SubmitAns: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("SubmitAns> timeout\n")
+		//log.Printf("SubmitAns> timeout\n")
+		Log.Send("Exercise.SubmitAns.error","timeout")
 		return &I{},errors.New("timeout")
 	default:
 	}
@@ -166,7 +184,8 @@ func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 	if 	tmp!=""{
 		file,err:=os.Create(tmp)
 		if err!=nil {
-			log.Printf("SubmitAns> %s\n",err.Error())
+			//log.Printf("SubmitAns> %s\n",err.Error())
+			Log.Send("Exercise.SubmitAns.error",err.Error())
 			return &I{},err
 		}
 		defer file.Close()
@@ -178,53 +197,62 @@ func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 		tmp:=Submitdb{Uploaderid:in.Uploaderid, Exerciseid:in.Exerciseid}
 		err=tx.Model(Submitdb{}).Save(&tmp).Error
 		if err!=nil {
-			log.Printf("SubmitAns> %s\n",err.Error())
+			Log.Send("Exercise.SubmitAns.error",err.Error())
+			//log.Printf("SubmitAns> %s\n",err.Error())
 			return err
 		}
 		in.Id=tmp.Id
 		var location="./submit/"+strconv.Itoa(int(in.Id))+".sub"
 		err=tx.Model(Submitdb{}).Where("id=?",in.Id).Update("location",location).Error
 		if err!=nil {
-			log.Printf("SubmitAns> %s\n",err.Error())
+			Log.Send("Exercise.SubmitAns.error",err.Error())
+			//log.Printf("SubmitAns> %s\n",err.Error())
 			return err
 		}
 		file,err:=os.Create(location)
 		if err!=nil {
-			log.Printf("SubmitAns> %s\n",err.Error())
+			Log.Send("Exercise.SubmitAns.error",err.Error())
+			//log.Printf("SubmitAns> %s\n",err.Error())
 			return err
 		}
 		defer file.Close()
 		_,err=file.WriteString(in.Contents)
 		if err!=nil {
-			log.Printf("SubmitAns> %s\n",err.Error())
+			Log.Send("Exercise.SubmitAns.error",err.Error())
+			//log.Printf("SubmitAns> %s\n",err.Error())
 			return err
 		}
 		return nil
 	})
 	if err!=nil {
-		log.Printf("SubmitAns> %s\n",err.Error())
+		Log.Send("Exercise.SubmitAns.error",err.Error())
+		//log.Printf("SubmitAns> %s\n",err.Error())
 	}
 	return &I{},err
 }
 //根据考试ID获取答案
 func(e *ExerciseService)GetKey(c context.Context,in *I) (*Submit, error){
-	log.Printf("GetKey: %+v\n",in)
+	//log.Printf("GetKey: %+v\n",in)
+	Log.Send("Exercise.GetKey.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetKey> timeout\n")
+		//log.Printf("GetKey> timeout\n")
+		Log.Send("Exercise.GetKey.error","timeout")
 		return &Submit{},errors.New("timeout")
 	default:
 	}
 	var own int32
 	err:=e.db.Model(Exercisedb{}).Where("id=?",in.I).Select("Ownerid").Find(&own).Error
 	if err!=nil {
-		log.Printf("GetKey> %s\n",err.Error())
+		Log.Send("Exercise.GetKey.error",err.Error())
+		//log.Printf("GetKey> %s\n",err.Error())
 		return &Submit{},err
 	}
 	var location string
 	err=e.db.Model(Submitdb{}).Where(Submitdb{Uploaderid: own,Exerciseid: in.I}).Select("location").Find(&location).Error
 	if err!=nil {
-		log.Printf("GetKey> %s\n",err.Error())
+		Log.Send("Exercise.GetKey.error",err.Error())
+		//log.Printf("GetKey> %s\n",err.Error())
 		return &Submit{},err
 	}
 	if location == ""{//还没有上传
@@ -232,19 +260,22 @@ func(e *ExerciseService)GetKey(c context.Context,in *I) (*Submit, error){
 	}
 	file,err:=os.Open(location)
 	if err!=nil {
-		log.Printf("GetKey> %s\n",err.Error())
+		Log.Send("Exercise.GetKey.error",err.Error())
+		//log.Printf("GetKey> %s\n",err.Error())
 		return &Submit{},err
 	}
 	defer file.Close()
 	b,err:=ioutil.ReadAll(file)
 	if err!=nil {
-		log.Printf("GetKey> %s\n",err.Error())
+		Log.Send("Exercise.GetKey.error",err.Error())
+		//log.Printf("GetKey> %s\n",err.Error())
 		return &Submit{},err
 	}
 	re:=Submit{}
 	err=e.db.Model(Submitdb{}).Where("Uploaderid=?",own).Find(&re).Error
 	if err!=nil {
-		log.Printf("GetKey> %s\n",err.Error())
+		Log.Send("Exercise.GetKey.error",err.Error())
+		//log.Printf("GetKey> %s\n",err.Error())
 		return &Submit{},err
 	}
 	re.Contents=string(b)
@@ -252,53 +283,63 @@ func(e *ExerciseService)GetKey(c context.Context,in *I) (*Submit, error){
 }
 //给学生打分
 func(e *ExerciseService)SetScore(c context.Context,in *Score) (*Empty1, error){
-	log.Printf("SetScore: %+v\n",in)
+	//log.Printf("SetScore: %+v\n",in)
+	Log.Send("Exercise.SetScore.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("SetScore> timeout\n")
+		//log.Printf("SetScore> timeout\n")
+		Log.Send("Exercise.SetScore.error","timeout")
 		return &Empty1{},errors.New("timeout")
 	default:
 	}
 	err:=e.db.Model(Submitdb{}).Where("id=?",in.Submitid).Update("value",in.Value).Error
 	if err!=nil {
-		log.Printf("SetScore> %s\n",err.Error())
+		Log.Send("Exercise.SetScore.error",err.Error())
+		//log.Printf("SetScore> %s\n",err.Error())
 	}
 	return &Empty1{},err
 }
 //学生根据提交记录获取本次得分
 func(e *ExerciseService)GetScore(c context.Context,in *I) (*Score, error){
-	log.Printf("GetScore: %+v\n",in)
+	//log.Printf("GetScore: %+v\n",in)
+	Log.Send("Exercise.GetScore.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("GetScore> timeout\n")
+		//log.Printf("GetScore> timeout\n")
+		Log.Send("Exercise.GetScore.error","timeout")
 		return &Score{},errors.New("timeout")
 	default:
 	}
 	var v int32
 	err:=e.db.Model(Submitdb{}).Where("id=?",in.I).Select("value").Find(&v).Error
 	if err!=nil {
-		log.Printf("GetScore> %s\n",err.Error())
+		Log.Send("Exercise.GetScore.error",err.Error())
+		//log.Printf("GetScore> %s\n",err.Error())
 	}
 	return &Score{Value: v},err
 }
 //学生根据自己的ID获取自己的所有提交记录
 func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
-	log.Printf("GetScores: %+v\n",in)
+	//log.Printf("GetScores: %+v\n",in)
+	Log.Send("Exercise.GetScores.info",in)
 	var re []Submitdb
 	err:=e.db.Model(Submitdb{}).Where("Uploaderid=?",in.I).Find(&re).Error
 	if err!=nil {
-		log.Printf("GetScores> %s\n",err.Error())
+		//log.Printf("GetScores> %s\n",err.Error())
+		Log.Send("Exercise.GetScores.error","timeout")
 		return err
 	}
 	for _,i:=range re{
 		file,err:=os.Open(i.Location)
 		if err!=nil {
-			log.Printf("GetScores> %s\n",err.Error())
+			Log.Send("Exercise.GetScores.error",err.Error())
+			//log.Printf("GetScores> %s\n",err.Error())
 			return err
 		}
 		b,err:=ioutil.ReadAll(file)
 		if err!=nil {
-			log.Printf("GetScores> %s\n",err.Error())
+			Log.Send("Exercise.GetScores.error",err.Error())
+			//log.Printf("GetScores> %s\n",err.Error())
 			return err
 		}
 		err=stream.Send(&Submit{
@@ -309,7 +350,8 @@ func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
 			Value:i.Value,
 		})
 		if err!=nil {
-			log.Printf("GetScores> %s\n",err.Error())
+			Log.Send("Exercise.GetScores.error",err.Error())
+			//log.Printf("GetScores> %s\n",err.Error())
 			return err
 		}
 	}
@@ -317,23 +359,27 @@ func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
 }
 //老师根据考试ID获取本次班级得分情况
 func(e *ExerciseService)GetClassScores(in *I,stream Exercise_GetClassScoresServer) error{
-	log.Printf("GetClassScores: %+v\n",in)
+	//log.Printf("GetClassScores: %+v\n",in)
+	Log.Send("Exercise.GetClassScores.info",in)
 	var ids []int32
 	err:=e.db.Model(Submitdb{}).Where("Exerciseid=?",in.I).Select("id").Find(&ids).Error
 	if err!=nil {
-		log.Printf("GetClassScores> %s\n",err.Error())
+		Log.Send("Exercise.GetClassScores.error",err.Error())
+		//log.Printf("GetClassScores> %s\n",err.Error())
 		return err
 	}
 	var v int32
 	for _,i:=range ids{
 		err:=e.db.Model(Submitdb{}).Where("id=?",i).Select("value").Find(&v).Error
 		if err!=nil {
-			log.Printf("GetClassScores> %s\n",err.Error())
+			Log.Send("Exercise.GetClassScores.error",err.Error())
+			//log.Printf("GetClassScores> %s\n",err.Error())
 			return err
 		}
 		err=stream.Send(&Score{Submitid:i,Value: v})
 		if err!=nil {
-			log.Printf("GetClassScores> %s\n",err.Error())
+			Log.Send("Exercise.GetClassScores.error",err.Error())
+			//log.Printf("GetClassScores> %s\n",err.Error())
 			return err
 		}
 	}
@@ -341,18 +387,22 @@ func(e *ExerciseService)GetClassScores(in *I,stream Exercise_GetClassScoresServe
 }
 //老师根据考试ID获取本次提交情况
 func(e *ExerciseService)GetClassSubmit(in *I,stream Exercise_GetClassSubmitServer) error{
+	Log.Send("Exercise.GetClassSubmit.info",in)
 	var s []Submitdb
 	err:=e.db.Model(Submitdb{}).Where("Exerciseid=?",in.I).Find(&s).Error
 	if err!=nil {
+		Log.Send("Exercise.GetClassSubmit.error",err.Error())
 		return err
 	}
 	for _,i:=range s{
 		file,err:=os.Open(i.Location)
 		if err!=nil {
+			Log.Send("Exercise.GetClassSubmit.error",err.Error())
 			return err
 		}
 		b,err:=ioutil.ReadAll(file)
 		if err!=nil {
+			Log.Send("Exercise.GetClassSubmit.error",err.Error())
 			return err
 		}
 		file.Close()
@@ -368,10 +418,12 @@ func(e *ExerciseService)GetClassSubmit(in *I,stream Exercise_GetClassSubmitServe
 }
 //根据考试ID删除考试记录-试题，提交记录等
 func(e *ExerciseService)DelExercise(c context.Context,in *I) (*Empty1, error){
-	log.Printf("DelExercise: %+v\n",in)
+	Log.Send("Exercise.DelExercise.info",in)
+	//log.Printf("DelExercise: %+v\n",in)
 	select {
 	case <-c.Done():
-		log.Printf("DelExercise> timeout\n")
+		Log.Send("Exercise.DelExercise.error","timeout")
+		//log.Printf("DelExercise> timeout\n")
 		return &Empty1{},errors.New("timeout")
 	default:
 	}
@@ -408,14 +460,19 @@ func(e *ExerciseService)DelExercise(c context.Context,in *I) (*Empty1, error){
 		}
 		return nil
 	})
+	if err!=nil {
+		Log.Send("Exercise.DelExercise.error",err.Error())
+	}
 	return &Empty1{},err
 }
 //根据班级ID删除该班级所有记录
 func(e *ExerciseService)DelExercises(c context.Context,in *I) (*Empty1, error){
-	log.Printf("DelExercise: %+v\n",in)
+	//log.Printf("DelExercise: %+v\n",in)
+	Log.Send("Exercise.DelExercises.info",in)
 	select {
 	case <-c.Done():
-		log.Printf("DelExercise> timeout\n")
+		Log.Send("Exercise.DelExercises.error","timeout")
+		//log.Printf("DelExercise> timeout\n")
 		return &Empty1{},errors.New("timeout")
 	default:
 	}
@@ -434,6 +491,9 @@ func(e *ExerciseService)DelExercises(c context.Context,in *I) (*Empty1, error){
 		}
 		return nil
 	})
+	if err!=nil {
+		Log.Send("Exercise.DelExercises.error",err.Error())
+	}
 	return &Empty1{},err
 }
 
