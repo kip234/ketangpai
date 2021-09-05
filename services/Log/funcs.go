@@ -6,27 +6,7 @@ import (
 	"time"
 )
 
-//func Init(){
-//	conn, err := amqp.Dial(mqAddr)
-//	failOnError(err, "Failed to connect to RabbitMQ")
-//	defer conn.Close()
-//
-//	send, err = conn.Channel()
-//	failOnError(err, "Failed to open a channel")
-//	//defer send.Close()
-//
-//	err = send.ExchangeDeclare(
-//		exchangeName, // name
-//		exchangeType,      // type
-//		true,         // durable
-//		false,        // auto-deleted
-//		false,        // internal
-//		false,        // no-wait
-//		nil,          // arguments
-//	)
-//	failOnError(err, "Failed to declare an exchange")
-//}
-
+//刷新文件-按日期记录
 func flushFile(dir string,file *os.File) (*os.File,error) {
 	str:=dir+time.Now().Format("2006-01-02")
 	if file == nil {

@@ -15,12 +15,12 @@ type Filter struct{
 	replace byte
 }
 
+//临时添加敏感词
 func (f *Filter)Add(c context.Context,arg *FilterData)(*FilterData, error){
 	Log.Send("Filter.Add.info",arg)
 	select {
 	case <-c.Done():
 		Log.Send("Filter.Add.error","timeout")
-		//log.Printf("Add> timeout\n")
 		return &FilterData{},errors.New("timeout")
 	default:
 	}
@@ -28,6 +28,7 @@ func (f *Filter)Add(c context.Context,arg *FilterData)(*FilterData, error){
 	return &FilterData{},nil
 }
 
+//处理敏感词
 func (f *Filter)Process(c context.Context,arg *FilterData) (*FilterData, error) {
 	Log.Send("Filter.Process.info",arg)
 	select {
@@ -67,6 +68,7 @@ func (f *Filter)Process(c context.Context,arg *FilterData) (*FilterData, error) 
 	return &FilterData{Data:re},nil
 }
 
+//依靠SensitiveWords指向的文件内容创建一个过滤器
 func newFilter() (error,*Filter) {
 	file,err:=os.Open(SensitiveWords)
 	if err!=nil{

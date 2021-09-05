@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+//启动服务
 func Run(){
 	jwt:= newNetworkDiskService()
 	lis,err:=net.Listen("tcp", Addr)
@@ -17,6 +18,7 @@ func Run(){
 	panic(err)
 }
 
+//创建调用连接
 func NewTestBankConn() NetworkDiskClient {
 	conn,err:=grpc.Dial(Addr,grpc.WithInsecure())
 	if err!=nil {

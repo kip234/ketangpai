@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+//启动服务
 func Run(){
 	jwt:= newExerciseService()
 	lis,err:=net.Listen("tcp", Addr)
@@ -16,7 +17,7 @@ func Run(){
 	err=s.Serve(lis)
 	panic(err)
 }
-
+//生成调用连接
 func NewExerciseConn() ExerciseClient {
 	conn,err:=grpc.Dial(Addr,grpc.WithInsecure())
 	if err!=nil {

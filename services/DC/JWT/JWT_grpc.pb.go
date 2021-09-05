@@ -33,7 +33,7 @@ func NewJWTClient(cc grpc.ClientConnInterface) JWTClient {
 
 func (c *jWTClient) RefreshToken(ctx context.Context, in *Juser, opts ...grpc.CallOption) (*Token, error) {
 	out := new(Token)
-	err := c.cc.Invoke(ctx, "/JWT/refresh_token", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/JWT.JWT/refresh_token", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (c *jWTClient) RefreshToken(ctx context.Context, in *Juser, opts ...grpc.Ca
 
 func (c *jWTClient) CheckToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Juser, error) {
 	out := new(Juser)
-	err := c.cc.Invoke(ctx, "/JWT/check_token", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/JWT.JWT/check_token", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *jWTClient) CheckToken(ctx context.Context, in *Token, opts ...grpc.Call
 
 func (c *jWTClient) DelJwt(ctx context.Context, in *Juser, opts ...grpc.CallOption) (*Token, error) {
 	out := new(Token)
-	err := c.cc.Invoke(ctx, "/JWT/del_jwt", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/JWT.JWT/del_jwt", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func _JWT_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/JWT/refresh_token",
+		FullMethod: "/JWT.JWT/refresh_token",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(JWTServer).RefreshToken(ctx, req.(*Juser))
@@ -122,7 +122,7 @@ func _JWT_CheckToken_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/JWT/check_token",
+		FullMethod: "/JWT.JWT/check_token",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(JWTServer).CheckToken(ctx, req.(*Token))
@@ -140,7 +140,7 @@ func _JWT_DelJwt_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/JWT/del_jwt",
+		FullMethod: "/JWT.JWT/del_jwt",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(JWTServer).DelJwt(ctx, req.(*Juser))
@@ -152,7 +152,7 @@ func _JWT_DelJwt_Handler(srv interface{}, ctx context.Context, dec func(interfac
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var JWT_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "JWT",
+	ServiceName: "JWT.JWT",
 	HandlerType: (*JWTServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

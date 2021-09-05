@@ -11,7 +11,7 @@ func NewPrefix_tree()*Prefix_tree {
 	}
 }
 
-//添一条记录
+//添一条临时敏感词记录
 func (p *Prefix_tree)Add(str []byte){
 	index:=0           //当前str处理的下标
 	lenth:=len(str)    //str长度
@@ -40,7 +40,6 @@ func (p *Prefix_tree)Add(str []byte){
 		//没有？
 		if !flag {
 			now.Add(proc)
-			//now.Sons[str[index]]=proc
 			now=proc
 		}
 		index+=1

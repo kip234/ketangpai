@@ -27,7 +27,7 @@ message empty{
 }
 
 message id{
-  int32 i=1;
+  uint32 i=1;
 }
 
 message s{
@@ -39,17 +39,17 @@ message right{
 }
 
 message uuser{
-  int32 uid=2;
+  uint32 uid=2;
   string name=1;
   string pwd=3;
   uint32 type=4;
-  int32 classid=5;
+  uint32 classid=5;
   string email=6;
 }
 
 message class{
-  int32 classid=1;
-  int32 teacher=2;
+  uint32 classid=1;
+  uint32 teacher=2;
   string name=3;
-  repeated int32 students=4;
+  repeated uint32 students=4;
 }

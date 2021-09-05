@@ -20,23 +20,23 @@ func Send(routingKey string,body interface{}) error {
 	//defer send.Close()
 
 	err = send.ExchangeDeclare(
-		exchangeName, // name
-		exchangeType,      // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+		exchangeName,
+		exchangeType,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	failOnError(err, "Failed to declare an exchange")
 
 
 
 	err = send.Publish(
-		exchangeName,          // exchange
-		routingKey, // routing key
-		false, // mandatory
-		false, // immediate
+		exchangeName,
+		routingKey,
+		false,
+		false,
 		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(message),

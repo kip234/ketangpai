@@ -6,12 +6,12 @@ import (
 )
 
 type Messagedb struct{
-	Id      int32  `form:"id" json:"id" gorm:"primaryKey"`  //自身ID
-	Owner   int32  `form:"owner" json:"owner" gorm:"not null"`    //发起者
-	Tosb    int32  `form:"tosb" json:"tosb" gorm:"not null"`    //对某人说的
+	Id      uint32  `form:"id" json:"id" gorm:"primaryKey"`  //自身ID
+	Owner   uint32  `form:"owner" json:"owner" gorm:"not null"`    //发起者
+	Tosb    uint32  `form:"tosb" json:"tosb" gorm:"not null"`    //对某人说的
 	Content string `binding:"required" form:"content" json:"content" gorm:"not null"` 	//说了啥？
 	Time    int64  `form:"time" json:"time" gorm:"not null"`    //说的时间
-	Classid int32  `form:"classid" json:"classid" gorm:"not null"`	//所属班级
+	Classid uint32  `form:"classid" json:"classid" gorm:"not null"`	//所属班级
 }
 
 var DB *gorm.DB

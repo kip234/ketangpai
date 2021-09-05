@@ -19,11 +19,11 @@ const (
 )
 
 type fileinfodb struct{
-	Id       int32  `gorm:"primaryKey"`
-	Uploader int32  `gorm:"not null"`
-	Classid  int32  `gorm:"not null"`
+	Id       uint32  `gorm:"primaryKey"`
+	Uploader uint32  `gorm:"not null"`
+	Classid  uint32  `gorm:"not null"`
 	Name     string `gorm:"not null"`
-	Size     int64  `gorm:"not null"`
+	Size     uint64  `gorm:"not null"`
 	Time     int64  `gorm:"not null"`
 	Location string `gorm:"not null"`
 }

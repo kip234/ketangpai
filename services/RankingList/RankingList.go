@@ -5,7 +5,6 @@ import (
 	"KeTangPai/services/Log"
 	"context"
 	"errors"
-	"log"
 )
 
 type RankingListService struct {
@@ -20,19 +19,17 @@ func newRankingListService() (re *RankingListService) {
 	return
 }
 
+//刷新记录
 func (r *RankingListService)Flushlist(c context.Context,in *Flushin) (f *Flushout,err error){
 	Log.Send("RankingList.Flushlist.info",in)
 	defer func(){
 		if err!=nil {
 			Log.Send("RankingList.Flushlist.error",err.Error())
-			//log.Printf("Flushlist> %s\n",err.Error())
 		}
 	}()
-	//log.Printf("Flushlist: %+v\n",in)
 	select {
 	case <-c.Done():
 		Log.Send("RankingList.Flushlist.error","timeout")
-		log.Printf("Flushlist> timeout\n")
 		return &Flushout{},errors.New("timeout")
 	default:
 	}
@@ -47,19 +44,17 @@ func (r *RankingListService)Flushlist(c context.Context,in *Flushin) (f *Flushou
 	return &Flushout{Member: in.Member,Ranking: rank},err
 }
 
+//获取榜单信息
 func (r *RankingListService)Getlistinfo(c context.Context,in *Listname) (l *Listinfo,err error){
 	Log.Send("RankingList.Getlistinfo.info",in)
 	defer func(){
 		if err!=nil {
 			Log.Send("RankingList.Getlistinfo.error",err.Error())
-			//log.Printf("Getlistinfo> %s\n",err.Error())
 		}
 	}()
-	//log.Printf("Getlistinfo: %+v\n",in)
 	select {
 	case <-c.Done():
 		Log.Send("RankingList.Getlistinfo.error","timeout")
-		//log.Printf("Getlistinfo> timeout\n")
 		return &Listinfo{},errors.New("timeout")
 	default:
 	}
@@ -67,24 +62,20 @@ func (r *RankingListService)Getlistinfo(c context.Context,in *Listname) (l *List
 	if err!=nil {
 		return &Listinfo{},err
 	}
-	//l.List=re
-	//l.Name=in.Name
 	return &Listinfo{Name: in.Name,List:re},err
 }
 
+//删除榜单
 func (r *RankingListService)Dellist(c context.Context,in *Listname) (e *Empty,err error){
 	defer func(){
 		if err!=nil {
 			Log.Send("RankingList.Dellist.error",err.Error())
-			//log.Printf("Dellist> %s\n",err.Error())
 		}
 	}()
-	//log.Printf("Dellist: %+v\n",in)
 	Log.Send("RankingList.Dellist.info",in)
 	select {
 	case <-c.Done():
 		Log.Send("RankingList.Dellist.error","timeout")
-		//log.Printf("Dellist> timeout\n")
 		return &Empty{},errors.New("timeout")
 	default:
 	}
@@ -92,23 +83,21 @@ func (r *RankingListService)Dellist(c context.Context,in *Listname) (e *Empty,er
 	return &Empty{},err
 }
 
+//获取排名
 func (r *RankingListService)Getranking(c context.Context,in *Members) (ranks *Rankings,err error){
 	defer func(){
 		if err!=nil {
 			Log.Send("RankingList.Getranking.error",err.Error())
-			//log.Printf("Getranking: %s\n",err.Error())
 		}
 	}()
-	//log.Printf("Getranking> %+v\n",in)
 	Log.Send("RankingList.Getranking.info",in)
 	select {
 	case <-c.Done():
-		//log.Printf("Getranking> timeout\n")
 		Log.Send("RankingList.Getranking.error","timeout")
 		return &Rankings{},errors.New("timeout")
 	default:
 	}
-	ranks.Rank=make([]int64,len(in.Members))
+	ranks.Rank=make([]uint64,len(in.Members))
 	for index,i:=range in.Members{
 		rank,err:=r.pool.ZREVRANK(in.Name,i)
 		if err!=nil {

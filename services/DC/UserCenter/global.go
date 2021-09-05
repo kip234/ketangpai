@@ -28,19 +28,19 @@ const (
 
 //储存对象
 type Userdb struct {
-	Uid     int32   `form:"uid" json:"uid" gorm:"primaryKey"`
+	Uid     uint32   `form:"uid" json:"uid" gorm:"primaryKey"`
 	Name    string	`form:"name" json:"name" gorm:"not null"`
 	Pwd     string	`binding:"required" form:"pwd" json:"pwd" gorm:"not null"`
 	Type    uint32	`form:"type" json:"type" gorm:"not null;default:0"`
-	Classid int32	`form:"classid" json:"Classid"`
+	Classid uint32	`form:"classid" json:"Classid"`
 	Email string    `form:"email" json:"email" gorm:"not null;unique"`
 }
 
 type Classdb struct {
-	Classid  int32   `form:"classid" json:"classid" gorm:"primaryKey"`
-	Teacher  int32   `form:"teacher" json:"teacher" gorm:"not null;unique"`
+	Classid  uint32   `form:"classid" json:"classid" gorm:"primaryKey"`
+	Teacher  uint32   `form:"teacher" json:"teacher" gorm:"not null;unique"`
 	Name     string  `binding:"required" form:"name" json:"name" gorm:"not null;unique"`
-	Students []int32 `binding:"required" form:"students" json:"students" gorm:"-"`
+	Students []uint32 `binding:"required" form:"students" json:"students" gorm:"-"`
 }
 
 func InitGorm() {

@@ -28,7 +28,7 @@ func File_download(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		stream,err:=n.Download(ctx,&NetworkDisk.Fileid{Id: int32(fileid)})
+		stream,err:=n.Download(ctx,&NetworkDisk.Fileid{Id: uint32(fileid)})
 		b,err:=stream.Recv()
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
@@ -46,7 +46,7 @@ func File_download(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 		content:=make([]byte,info.Size)
-		index:=0
+		var index uint64
 		for  {
 			f,err:=stream.Recv()
 			if err==io.EOF{
@@ -59,7 +59,7 @@ func File_download(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 				return
 			}
 			copy(content[index:],f.Content)
-			index+=NetworkDisk.TransmissionUnit
+			index+= info.Unit
 		}
 		c.Header("Content-Disposition","attachment;filename="+info.Name)
 		_,err=c.Writer.Write(content)

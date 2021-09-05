@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+//判断用户是否是老师
+
 func IsTeacher(uservice UserCenter.UserCenterClient) gin.HandlerFunc {
 	return func (c *gin.Context){
 		uid,err:=getInt("uid",c)

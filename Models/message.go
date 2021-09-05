@@ -1,5 +1,7 @@
 package Models
 
+//实时交流用的消息结构
+
 type In struct{//从前端获取信息
 	Content string//内容
 	To []int32//对某些人说

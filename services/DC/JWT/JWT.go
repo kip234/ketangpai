@@ -24,7 +24,7 @@ type Payload struct {
 	Iss string 	`json:"iss"`//签发人
 	Exp uint 	`json:"exp"`//过期时间
 	Sub string 	`json:"sub"`//主题
-	Aud int32 	`json:"aud"`//用户ID
+	Aud uint32 	`json:"aud"`//用户ID
 	Nbf uint 	`json:"ndf"`//生效时间
 	Iat int64 	`json:"iat"`//签发时间
 	Jti uint 	`json:"jti"`//编号
@@ -51,23 +51,21 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 	select {
 	case <-c.Done():
 		Log.Send("JWT.RefreshToken.error","timeout")
-		//log.Printf("RefreshToken> timeout\n")
 		return &Token{},errors.New("timeout")
 	default:
 	}
+	//给部分字段赋上特殊值
 	DefaultJwt.Payload.Aud=U.GetUid()
 	DefaultJwt.Payload.Iat=time.Now().Unix()
 	header,err:=json.Marshal(DefaultJwt.Header)
 	if err!=nil {
 		Log.Send("JWT.RefreshToken.error",err.Error())
-		//log.Printf("RefreshToken> %s\n",err.Error())
 		return &Token{Content: ""},err
 	}
 	Header1:=base64.StdEncoding.EncodeToString(header)
 	payload,err:=json.Marshal(DefaultJwt.Payload)
 	if err!=nil {
 		Log.Send("JWT.RefreshToken.error",err.Error())
-		//log.Printf("RefreshToken> %s\n",err.Error())
 		return &Token{Content: ""},err
 	}
 
@@ -80,7 +78,6 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 	err=j.redis.SET(U.GetUid(),t.Content)
 	if err!=nil {
 		Log.Send("JWT.RefreshToken.error",err.Error())
-		//log.Printf("RefreshToken> %s\n",err.Error())
 	}
 	return &t,err
 }
@@ -90,7 +87,6 @@ func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
 	select {
 	case <-c.Done():
 		Log.Send("JWT.CheckToken.error","timeout")
-		//log.Printf("CheckToken> timeout\n")
 		return &Juser{},errors.New("timeout")
 	default:
 	}
@@ -104,14 +100,12 @@ func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
 	p,err:=base64.StdEncoding.DecodeString(hps[1])//反序列化paylo
 	if err!=nil{
 		Log.Send("JWT.CheckToken.error",err.Error())
-		//log.Printf("CheckToken> %s\n",err.Error())
 		return &Juser{},err
 	}
 	err = json.Unmarshal(p,&DefaultJwt.Payload)
 	r,err:=j.redis.GET(strconv.Itoa(int(DefaultJwt.Payload.Aud)))//查找token记录
 	if err!=nil{
 		Log.Send("JWT.CheckToken.error",err.Error())
-		//log.Printf("CheckToken> %s\n",err.Error())
 		return &Juser{},err
 	}
 	if r!=t.Content{//与记录不符
@@ -121,19 +115,18 @@ func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
 	return &Juser{Uid: DefaultJwt.Payload.Aud},err
 }
 
+//清除JWT记录
 func (j *JwtService) DelJwt(c context.Context,in *Juser) (*Token, error){
 	Log.Send("JWT.DelJwt.info",in)
 	select {
 	case <-c.Done():
 		Log.Send("JWT.DelJwt.error","timeout")
-		//log.Printf("DelJwt> timeout\n")
 		return &Token{},errors.New("timeout")
 	default:
 	}
 	err:=j.redis.DEL(strconv.Itoa(int(in.Uid)))
 	if err!=nil {
 		Log.Send("JWT.DelJwt.error",err.Error())
-		//log.Printf("DelJwt> %s\n",err.Error())
 	}
 	return &Token{},err
 }

@@ -5,6 +5,7 @@ import (
 	"net"
 )
 
+//启动服务
 func Run(){
 	jwt:=newJwtService()
 	lis,err:=net.Listen("tcp",Addr)
@@ -17,6 +18,7 @@ func Run(){
 	panic(err)
 }
 
+//生成调用连接
 func NewJWTConn() JWTClient {
 	conn,err:=grpc.Dial(Addr,grpc.WithInsecure())
 	if err!=nil {

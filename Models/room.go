@@ -4,6 +4,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+//实时交流用的房间结构
+
 type Room struct{
 	num int32
 	name string//标识

@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+//判断该用户是否有所属班级
+
+
 func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		uid,err:=getInt("uid",c)//获取UID

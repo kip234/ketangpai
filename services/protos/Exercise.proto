@@ -21,32 +21,32 @@ service exercise{
 message empty1{}
 
 message i{
-  int32 i=1;
+  uint32 i=1;
 }
 
 message exerciseData{
-  int32 id=1;//数据自身ID
-  int32 classid=2;//所属班级
-  int32 ownerid=3;//发布人
+  uint32 id=1;//数据自身ID
+  uint32 classid=2;//所属班级
+  uint32 ownerid=3;//发布人
   string content=4;//内容
   uint32 typ=5;//类型起始日期与截止日期、无时间限制、单次限时
   int64 begin=6;//起始日期
   int64 end=7;//截止日期
-  int64 duration=8;//持续时长
+  uint64 duration=8;//持续时长
   string name=9;//考试名
   uint32 Discipline=10;//科目
 }
 
 message submit{//只记录最近的一次-在时限内可以多次提交
-  int32 id=1;//数据本身的ID-固定！！！
-  int32 uploaderid=2;//上传者ID
-  int32 exerciseid=3;//考试ID
+  uint32 id=1;//数据本身的ID-固定！！！
+  uint32 uploaderid=2;//上传者ID
+  uint32 exerciseid=3;//考试ID
   string contents=4;//提交内容
-  int32 value=5;//得分
+  int32 value=5;//得分-负表示没给分
 }
 
 message score{
-  int32 submitid=1;//提交记录
-  int32 judge=2;//打分人
+  uint32 submitid=1;//提交记录
+  uint32 judge=2;//打分人
   int32 value=3;//分值
 }

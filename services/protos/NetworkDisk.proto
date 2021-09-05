@@ -9,16 +9,16 @@ service NetworkDisk{
 }
 
 message fileid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message classid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message contents{
   repeated string name=1;
-  repeated int32 id=2;
+  repeated uint32 id=2;
 }
 
 message filestream{
@@ -26,10 +26,11 @@ message filestream{
 }
 
 message fileinfo{
-  int32 id=1;
-  int32 uploader=2;
-  int32 classid=3;
+  uint32 id=1;
+  uint32 uploader=2;
+  uint32 classid=3;
   string name=4;
-  int64 size=5;
-  int64 time=6;
+  uint64 size=5;
+  int64 time=6;//Unix时间戳居然不是无符号整形
+  uint64 unit=7;
 }

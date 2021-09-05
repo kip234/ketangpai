@@ -16,49 +16,49 @@ func recieveError(){
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		exchangeName, // name
-		exchangeType,      // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
+		exchangeName,
+		exchangeType,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
 	failOnError(err,"exchange error")
 	q, err := ch.QueueDeclare(
-		"",    // name
-		false, // durable
-		false, // delete when usused
-		true,  // exclusive
-		false, // no-wait
-		nil,   // arguments
+		"",
+		false,
+		false,
+		true,
+		false,
+		nil,
 	)
 	failOnError(err,"queue error")
 
 	err = ch.QueueBind(
-		q.Name, // queue name
-		errorRoutingKey,     // routing key
-		exchangeName, // exchange
+		q.Name,
+		errorRoutingKey,
+		exchangeName,
 		false,
 		nil,
 	)
 	failOnError(err, "bind error")
 
 	err = ch.Qos(
-		1,     // prefetch count
-		0,     // prefetch size
-		false, // global
+		1,
+		0,
+		false,
 	)
 	failOnError(err, "set QoS error")
 
 	msgs, err := ch.Consume(
-		q.Name, // queue
-		"",     // consumer
-		false,   // auto ack
-		false,  // exclusive
-		false,  // no local
-		false,  // no wait
-		nil,    // args
+		q.Name,
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
 	)
 	failOnError(err,"Consume error")
 

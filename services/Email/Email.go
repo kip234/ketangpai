@@ -18,15 +18,12 @@ func newEmailService()*EmailService{
 	return &DefaultEmailService
 }
 
+//发送邮件
 func (e *EmailService)Send(c context.Context,in *Mail) (re *Empty,err error){
 	Log.Send("Email.Send.info",in)
-	//log.Printf("Send: %+v\n",in)
-	//log.Printf("Send: %+v\n",in)
-
 	select {
 	case <-c.Done():
 		Log.Send("Email.Send.error","timeout")
-		//log.Printf("Send> timeout\n")
 		return &Empty{},errors.New("timeout")
 	default:
 	}

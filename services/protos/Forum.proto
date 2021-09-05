@@ -10,20 +10,20 @@ service Forum{
 }
 
 message classid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message uid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message message{
-  int32 id=1;//自身ID
-  int32 owner=2;//发起者
-  int32 tosb=3;//对某人说的
+  uint32 id=1;//自身ID
+  uint32 owner=2;//发起者
+  uint32 tosb=3;//对某人说的
   string content=4;//说了啥？
   int64 time=5;//说的时间
-  int32 classid=6;//所属班级
+  uint32 classid=6;//所属班级
 }
 
 message messages{//一段话

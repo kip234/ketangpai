@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const TransmissionUnit=1024//bytes-每次传输的单位大小
+
 func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 	return func(c *gin.Context){
 		uid,err:= getInt("uid",c)
@@ -28,8 +30,8 @@ func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 		tmp:=NetworkDisk.Fileinfo{
-			Uploader: uid,
-			Classid: classid,
+			Uploader: uint32(uid),
+			Classid: uint32(classid),
 			Time: time.Now().Unix(),
 		}
 		file,err:=c.FormFile("file")//获取上传的文件
@@ -40,7 +42,8 @@ func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 		tmp.Name=file.Filename
-		tmp.Size=file.Size
+		tmp.Size=uint64(file.Size)
+		tmp.Unit=TransmissionUnit
 
 		b,err:=json.Marshal(tmp)
 		if err!=nil{
@@ -74,7 +77,7 @@ func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 
-		units:=make([]byte,NetworkDisk.TransmissionUnit)
+		units:=make([]byte,tmp.Unit)
 		for {
 			_,err=src.Read(units)
 			if err==io.EOF {

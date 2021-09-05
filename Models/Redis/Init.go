@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+//用于初始化Redis连接
+
 func (r *RedisPool)Init()  {
 	r.rpool = &redis.Pool{
 		Dial: func() (redis.Conn, error) {
