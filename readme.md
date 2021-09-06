@@ -542,32 +542,33 @@ service exercise{
 message empty1{}
 
 message i{
-  int32 i=1;
+  uint32 i=1;
 }
 
 message exerciseData{
-  int32 id=1;//数据自身ID
-  int32 classid=2;//所属班级
-  int32 ownerid=3;//发布人
+  uint32 id=1;//数据自身ID
+  uint32 classid=2;//所属班级
+  uint32 ownerid=3;//发布人
   string content=4;//内容
-  int32 typ=5;//类型起始日期与截止日期、无时间限制、单次限时
+  uint32 typ=5;//类型起始日期与截止日期、无时间限制、单次限时
   int64 begin=6;//起始日期
   int64 end=7;//截止日期
-  int64 duration=8;//持续时长
+  uint64 duration=8;//持续时长
   string name=9;//考试名
+  uint32 Discipline=10;//科目
 }
 
 message submit{//只记录最近的一次-在时限内可以多次提交
-  int32 id=1;//数据本身的ID-固定！！！
-  int32 uploaderid=2;//上传者ID
-  int32 exerciseid=3;//考试ID
+  uint32 id=1;//数据本身的ID-固定！！！
+  uint32 uploaderid=2;//上传者ID
+  uint32 exerciseid=3;//考试ID
   string contents=4;//提交内容
-  int32 value=5;//得分
+  int32 value=5;//得分-负表示没给分
 }
 
 message score{
-  int32 submitid=1;//提交记录
-  int32 judge=2;//打分人
+  uint32 submitid=1;//提交记录
+  uint32 judge=2;//打分人
   int32 value=3;//分值
 }
 ```
@@ -613,20 +614,20 @@ service Forum{
 }
 
 message classid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message uid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message message{
-  int32 id=1;//自身ID
-  int32 owner=2;//发起者
-  int32 tosb=3;//对某人说的
+  uint32 id=1;//自身ID
+  uint32 owner=2;//发起者
+  uint32 tosb=3;//对某人说的
   string content=4;//说了啥？
   int64 time=5;//说的时间
-  int32 classid=6;//所属班级
+  uint32 classid=6;//所属班级
 }
 
 message messages{//一段话
@@ -655,7 +656,7 @@ message token{
 
 message juser{
   string name=1;
-  int32 uid=2;
+  uint32 uid=2;
   string pwd=3;
 }
 ```
@@ -678,16 +679,16 @@ service NetworkDisk{
 }
 
 message fileid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message classid{
-  int32 id=1;
+  uint32 id=1;
 }
 
 message contents{
   repeated string name=1;
-  repeated int32 id=2;
+  repeated uint32 id=2;
 }
 
 message filestream{
@@ -695,12 +696,13 @@ message filestream{
 }
 
 message fileinfo{
-  int32 id=1;
-  int32 uploader=2;
-  int32 classid=3;
+  uint32 id=1;
+  uint32 uploader=2;
+  uint32 classid=3;
   string name=4;
-  int64 size=5;
-  int64 time=6;
+  uint64 size=5;
+  int64 time=6;//Unix时间戳居然不是无符号整形
+  uint64 unit=7;
 }
 ```
 
@@ -735,7 +737,7 @@ message members{
 }
 
 message rankings{
-  repeated int64 rank=1;
+  repeated uint64 rank=1;
 }
 
 message flushin{
@@ -747,7 +749,7 @@ message flushin{
 
 message flushout{
   string member=1;//刷新对象
-  int64 ranking=2;//刷新后排名
+  uint64 ranking=2;//刷新后排名
 }
 
 message listinfo{
@@ -779,23 +781,23 @@ message ans{//答案
 }
 
 message testid{//试题ID
-  int32 id=1;
+  uint32 id=1;
 }
 
 message testconf{
-  int32 subjective_item=1;//主观题的数量
-  int32 objective_item=2;//客观题的数量
-  int32 discipline=3;//学科
+  uint32 subjective_item=1;//主观题的数量
+  uint32 objective_item=2;//客观题的数量
+  uint32 discipline=3;//学科
 }
 
 message test{
-  int32 id=1;//自身ID
-  int32 typ=2;//类型-主观题/客观题
+  uint32 id=1;//自身ID
+  uint32 typ=2;//类型-主观题/客观题
   string content=3;//内容
   string ans=4;//答案(如果有)
   string name=5;//名字-题目描述
-  int32 uploader=6;//上传者
-  int32 discipline=7;//学科
+  uint32 uploader=6;//上传者
+  uint32 discipline=7;//学科
 }
 ```
 
@@ -833,7 +835,7 @@ message empty{
 }
 
 message id{
-  int32 i=1;
+  uint32 i=1;
 }
 
 message s{
@@ -845,51 +847,26 @@ message right{
 }
 
 message uuser{
-  int32 uid=2;
+  uint32 uid=2;
   string name=1;
   string pwd=3;
-  int32 type=4;
-  int32 classid=5;
+  uint32 type=4;
+  uint32 classid=5;
   string email=6;
 }
 
 message class{
-  int32 classid=1;
-  int32 teacher=2;
+  uint32 classid=1;
+  uint32 teacher=2;
   string name=3;
-  repeated int32 students=4;
+  repeated uint32 students=4;
 }
-
 ```
 
 > 使用MySQL储存，用uusers和class两张表
-
-### TestBank
-
-```protobuf
-syntax="proto3";
-option go_package="TestBank";
-service TestBank{
-  rpc download_questions(stream questionid)returns(stream question){};//下载试题-可以多个
-  rpc upload_questions(stream question)returns(stream question){};//上传试题
-}
-message questionid{
-  int64 id=1;
-}
-message question{
-  int64 id=2;//试题ID
-  string content=3;//试题内容
-}
-```
-
-> 储存和发放试题
 
 ### Log
 
 > 收集日志，使用rabbitmq
 
-> 关于该服务：这部分写得并不好，因为error等级没有明确的划分，不管是因为用户的数据有问题还是程序执行过程中自己产生的问题都一视同仁，这样并不利于后面的维护以及及时报警(打算用邮件通知)，问什么我没有继续优化？那当然是因为要抓住假期仅剩的余额啦。
-
-## 新知识？
-
-> 使用gorm操作时，只要用Model()指明查找的表，就可以用另一种结构接收数据，要求是该结构的所有开放字段被包含于Model()所指明类型的字段中，于是用于传输数据的结构可以与面向储存的结构分离
+> 关于该服务：这部分写得并不好，因为error等级没有明确的划分，不管是因为用户的数据有问题还是程序执行过程中自己产生的问题都一视同仁，这样并不利于后面的维护以及及时报警(打算用邮件通知)。
