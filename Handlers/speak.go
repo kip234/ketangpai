@@ -46,8 +46,8 @@ func Speak(f Forum.ForumClient,fi Filter.FilterClient)gin.HandlerFunc{
 		}
 
 		tmp.Content=string(filtered.Data)
-		tmp.Classid=classid
-		tmp.Owner=uid
+		tmp.Classid=uint32(classid)
+		tmp.Owner=uint32(uid)
 		tmp.Time=time.Now().Unix()
 		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
 		re,err:=f.Speak(ctx,&Forum.Message{

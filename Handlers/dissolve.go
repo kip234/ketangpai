@@ -2,14 +2,14 @@ package Handlers
 
 import (
 	"KeTangPai/services/DC/Exercise"
-	"KeTangPai/services/DC/UserCenter"
+	"KeTangPai/services/DC/KetangpaiDB"
 	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
 
-func Dissolve(u  UserCenter.UserCenterClient,e  Exercise.ExerciseClient) gin.HandlerFunc {
+func Dissolve(u KetangpaiDB.KetangpaiDBClient,e  Exercise.ExerciseClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		classid,err:=getInt("classid",c)
 		if err!=nil {
@@ -19,7 +19,7 @@ func Dissolve(u  UserCenter.UserCenterClient,e  Exercise.ExerciseClient) gin.Han
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		_,err=u.DissolveClass(ctx,&UserCenter.Id{I: classid})
+		_,err=u.DissolveClass(ctx,&KetangpaiDB.Classid{Classid: uint32(classid)})
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -27,7 +27,7 @@ func Dissolve(u  UserCenter.UserCenterClient,e  Exercise.ExerciseClient) gin.Han
 			return
 		}
 		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		_,err=e.DelExercises(ctx,&Exercise.I{I: classid})
+		_,err=e.DelExercises(ctx,&Exercise.I{I: uint32(classid)})
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

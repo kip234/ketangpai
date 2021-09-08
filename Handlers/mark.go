@@ -47,7 +47,7 @@ func Mark(e  Exercise.ExerciseClient) gin.HandlerFunc {
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		_,err=e.SetScore(ctx, &Exercise.Score{Submitid: int32(sid),Value: int32(value),Judge: uid})
+		_,err=e.SetScore(ctx, &Exercise.Score{Submitid: uint32(sid),Value: int32(value),Judge: uint32(uid)})
 		if nil!=err {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

@@ -22,7 +22,7 @@ func Grade(e  Exercise.ExerciseClient) gin.HandlerFunc {
 				return
 			}
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			re,err:=e.GetScores(ctx,&Exercise.I{I: uid})
+			re,err:=e.GetScores(ctx,&Exercise.I{I: uint32(uid)})
 			if err!=nil {
 				c.JSON(http.StatusInternalServerError,gin.H{
 					"error":err.Error(),
@@ -57,7 +57,7 @@ func Grade(e  Exercise.ExerciseClient) gin.HandlerFunc {
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=e.GetScore(ctx,&Exercise.I{I:int32(sid)})
+		re,err:=e.GetScore(ctx,&Exercise.I{I:uint32(sid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

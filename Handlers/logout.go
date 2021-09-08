@@ -16,7 +16,7 @@ func Logout(j JWT.JWTClient)gin.HandlerFunc{
 			})
 			return
 		}
-		_,err=j.DelJwt(context.Background(),&JWT.Juser{Uid: uid})
+		_,err=j.DelJwt(context.Background(),&JWT.Juser{Uid: uint32(uid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

@@ -1,0 +1,50 @@
+syntax="proto3";
+option go_package="./KetangpaiDB";
+package ketangpaiDB;
+
+service ketangpaiDB{
+  rpc create_user(uid)returns(uid){};//创建用户(用户中心已存在-适应用户中心的UID创建记录)
+  rpc set_type(member)returns(member){};//设置用户类型
+  rpc get_user_class(uid)returns(classid){};//获取班级
+  rpc get_user_type(uid)returns(typecode){};//获取用户类型
+  rpc create_class(class)returns(class){};//创建一个班级
+  rpc get_class_info(classid)returns(class){};//获取班级所有信息
+  rpc get_class_teacher(classid)returns(uid){};//获取班级负责人ID
+  rpc get_class_name(classid)returns(classname){};//获取班级名字
+  rpc dissolve_class(classid)returns(empty){};//解散班级
+  rpc refreshing_class_data(class)returns(class){};//更新班级数据-名字、老师
+  rpc fire_student(uid)returns(class){};//将某学生从班级里面删除
+  rpc add_student(member)returns(class){};//添加某个学生到班级
+}
+
+message empty{
+}
+
+message uid{
+  uint32 uid=1;
+}
+
+message classid{
+  uint32 classid=1;
+}
+
+message typecode{
+  uint32 typecode=1;
+}
+
+message classname{
+  string name=1;
+}
+
+message member{
+  uint32 uid=1;
+  uint32 classid=2;
+  uint32 type=3;
+}
+
+message class{
+  uint32 classid=1;
+  uint32 teacher=2;
+  string name=3;
+  repeated uint32 students=4;
+}

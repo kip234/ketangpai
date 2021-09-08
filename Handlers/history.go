@@ -18,7 +18,7 @@ func History(f Forum.ForumClient )gin.HandlerFunc{
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=f.GetHistory(ctx,&Forum.Classid{Id: classid})
+		re,err:=f.GetHistory(ctx,&Forum.Classid{Id: uint32(classid)})
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

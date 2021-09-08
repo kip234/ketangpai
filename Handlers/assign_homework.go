@@ -52,8 +52,8 @@ func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.H
 			return
 		}
 		//补全信息
-		tmp.Ownerid = uid
-		tmp.Classid = classid
+		tmp.Ownerid = uint32(uid)
+		tmp.Classid = uint32(classid)
 
 		var re *Exercise.ExerciseData
 

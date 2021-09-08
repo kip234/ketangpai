@@ -22,7 +22,7 @@ func Check_test_status(e Exercise.ExerciseClient) gin.HandlerFunc {
 				return
 			}
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			re,err:=e.GetExercises(ctx,&Exercise.I{I: classid})//获取考试记录
+			re,err:=e.GetExercises(ctx,&Exercise.I{I: uint32(classid)})//获取考试记录
 			if err!=nil {
 				c.JSON(http.StatusInternalServerError,gin.H{
 					"error":err.Error(),
@@ -58,7 +58,7 @@ func Check_test_status(e Exercise.ExerciseClient) gin.HandlerFunc {
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=e.GetClassSubmit(ctx,&Exercise.I{I: int32(id)})//获取提交记录
+		re,err:=e.GetClassSubmit(ctx,&Exercise.I{I: uint32(id)})//获取提交记录
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

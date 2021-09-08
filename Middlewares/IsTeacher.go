@@ -1,7 +1,7 @@
 package Middlewares
 
 import (
-	"KeTangPai/services/DC/UserCenter"
+	"KeTangPai/services/DC/KetangpaiDB"
 	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -10,7 +10,7 @@ import (
 
 //判断用户是否是老师
 
-func IsTeacher(uservice UserCenter.UserCenterClient) gin.HandlerFunc {
+func IsTeacher(uservice KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 	return func (c *gin.Context){
 		uid,err:=getInt("uid",c)
 		if err!=nil {
@@ -21,7 +21,7 @@ func IsTeacher(uservice UserCenter.UserCenterClient) gin.HandlerFunc {
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(), serviceTimeLimit*time.Second)
-		typ,err:=uservice.GetUserType(ctx,&UserCenter.Id{I:uid})
+		typ,err:=uservice.GetUserType(ctx,&KetangpaiDB.Uid{Uid:uint32(uid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),
@@ -29,7 +29,7 @@ func IsTeacher(uservice UserCenter.UserCenterClient) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if typ.I!=UserCenter.Teacher{
+		if typ.Typecode!=KetangpaiDB.Teacher{
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":"only teacher can access it",
 			})

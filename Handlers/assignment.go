@@ -19,7 +19,7 @@ func Assignment(e Exercise.ExerciseClient) gin.HandlerFunc{
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=e.GetExercises(ctx,&Exercise.I{I: classid})//获取该班级布置过的所有作业
+		re,err:=e.GetExercises(ctx,&Exercise.I{I: uint32(classid)})//获取该班级布置过的所有作业
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

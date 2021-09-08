@@ -39,13 +39,13 @@ const (
 )
 
 type Testdb struct {
-	Id      int32  `form:"id" json:"id" gorm:"primaryKey"`          //自身ID
+	Id      uint32  `form:"id" json:"id" gorm:"primaryKey"`          //自身ID
 	Typ     uint32  `binding:"required" form:"typ" json:"typ" gorm:"not null"`        //类型-主观题/客观题
 	Content string `binding:"required" form:"content" json:"content" gorm:"-"` //内容
 	Ans     string `form:"ans" json:"ans" gorm:"-"`         //答案(如果有)
 	Name    string `binding:"required" form:"name" json:"name" gorm:"not null"`       //名字-题目描述
 	Location string`form:"location" json:"location" gorm:"not null"`		//储存路径
-	Uploader int32 `form:"uploader" json:"uploader" gorm:"not null"` //上传者
+	Uploader uint32 `form:"uploader" json:"uploader" gorm:"not null"` //上传者
 	Discipline uint32 `form:"discipline" json:"discipline" gorm:"not null"`//学科
 }
 

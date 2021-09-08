@@ -4,6 +4,7 @@ import (
 	"KeTangPai/Models"
 	"KeTangPai/services/DC/Exercise"
 	"KeTangPai/services/DC/JWT"
+	"KeTangPai/services/DC/KetangpaiDB"
 	"KeTangPai/services/DC/NetworkDisk"
 	"KeTangPai/services/DC/TestBank"
 	"KeTangPai/services/DC/UserCenter"
@@ -25,6 +26,7 @@ func main()  {
 	go RankingList.Run()
 	go Email.Run()
 	Log.Run()
+	go KetangpaiDB.Run()
 
 	rooms:=make(map[int32]*Models.Room)
 

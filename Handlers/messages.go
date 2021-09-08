@@ -18,7 +18,7 @@ func Messages(f Forum.ForumClient)gin.HandlerFunc{
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=f.GetMessage(ctx,&Forum.Uid{Id: uid})
+		re,err:=f.GetMessage(ctx,&Forum.Uid{Id: uint32(uid)})
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

@@ -1,7 +1,7 @@
 package Middlewares
 
 import (
-	"KeTangPai/services/DC/UserCenter"
+	"KeTangPai/services/DC/KetangpaiDB"
 	"context"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -11,7 +11,7 @@ import (
 //判断该用户是否有所属班级
 
 
-func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
+func HaveClass(u KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		uid,err:=getInt("uid",c)//获取UID
 		if err!=nil {//获取UID出错
@@ -23,7 +23,7 @@ func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
 		}
 
 		ctx,_:=context.WithTimeout(context.Background(), serviceTimeLimit*time.Second)
-		re,err:=u.GetUserClass(ctx,&UserCenter.Id{I:uid})//获取用户所属班级
+		re,err:=u.GetUserClass(ctx,&KetangpaiDB.Uid{Uid:uint32(uid)})//获取用户所属班级
 		if err!=nil {//
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),
@@ -31,7 +31,7 @@ func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if re.I<1{//没有所属班级
+		if re.Classid<1{//没有所属班级
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":"there is no class for you",
 			})
@@ -39,7 +39,7 @@ func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
 			return
 		}
 		ctx,_=context.WithTimeout(context.Background(), serviceTimeLimit*time.Second)
-		name,err:=u.GetClassName(ctx,&UserCenter.Id{I: re.I})
+		name,err:=u.GetClassName(ctx,re)
 		if err!=nil {//
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),
@@ -48,7 +48,7 @@ func HaveClass(u  UserCenter.UserCenterClient) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("classname",name.S)
-		c.Set("classid",re.I)//存入classID
+		c.Set("classname",name.Name)
+		c.Set("classid",re.Classid)//存入classID
 	}
 }

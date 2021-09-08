@@ -29,7 +29,7 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=e.GetExercisec(ctx,&Exercise.I{I: int32(eid)})
+		re,err:=e.GetExercisec(ctx,&Exercise.I{I: uint32(eid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),
@@ -46,7 +46,7 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 		}
 		if re.Typ==Exercise.TimeLimit{//限时型
 			re.Begin=time.Now().Unix()
-			re.End=re.Begin+re.Duration
+			re.End=re.Begin+int64(re.Duration)
 		}
 
 		uid,err:=getInt("uid",c)
@@ -99,7 +99,7 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 							conn.Close()
 							return
 						}
-						e.SubmitAns(context.Background(),&Exercise.Submit{Exerciseid: int32(eid),Uploaderid: uid,Contents: string(re.Data)})
+						e.SubmitAns(context.Background(),&Exercise.Submit{Exerciseid: uint32(eid),Uploaderid: uint32(uid),Contents: string(re.Data)})
 						conn.WriteJSON("submit successfully")
 				}
 			}

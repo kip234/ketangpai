@@ -113,7 +113,7 @@ const (
 ## 路由结构
 
 ```go
-server.GET("/register", Handlers.Register(s.User,s.Email))
+server.GET("/register", Handlers.Register(s.User,s.KetangpaiDB,s.Email))
 server.POST("/login", Middlewares.CheakUserInfo(s.User),Handlers.Login(s.JWT))
 server.POST("/retrieve",Handlers.Retrieve(s.User,s.Email))//找回密码
 
@@ -121,14 +121,17 @@ user:=server.Group("/",Middlewares.CheakJWT(s.JWT,s.User))//已登录
 {
     user.POST("/logout", Handlers.Logout(s.JWT))//注销
     user.POST("/setting", Handlers.Setting(s.User,s.Email))  //获取信息
-    user.GET("/setting", Handlers.Setting(s.User,s.Email)) //修改信息 - websocket
+    user.GET("/setting", Handlers.Setting(s.User,s.Email)) //修改信息(email password name) - websocket
 
-    admin:=user.Group("/",Middlewares.IsAdmin(s.User))//管理员？
+    user.POST("/set_type",Handlers.Set_type(s.KetangpaiDB))//修改用户类型
+
+
+    admin:=user.Group("/",Middlewares.IsAdmin(s.KetangpaiDB))//管理员？
     {
         admin.POST("/testbank_upload",Handlers.Testbank_upload(s.TestBank))//上传
     }
 
-    classmember:=user.Group("/class", Middlewares.HaveClass(s.User))//班级成员
+    classmember:=user.Group("/class", Middlewares.HaveClass(s.KetangpaiDB))//班级成员
     {
         classmember.POST("/file/upload", Handlers.File_upload(s.NetworkDisk))    //上传文件
         classmember.GET("/file/download", Handlers.File_download(s.NetworkDisk)) //下载文件
@@ -139,22 +142,23 @@ user:=server.Group("/",Middlewares.CheakJWT(s.JWT,s.User))//已登录
         classmember.GET("/chatroom",Handlers.ChatRoom(s.Filter,rooms,s.RankingList))//进入教室
     }
 
-    teacher := user.Group("/", Middlewares.IsTeacher(s.User))//老师
+    teacher := user.Group("/", Middlewares.IsTeacher(s.KetangpaiDB))//老师
     {
-        teacher.POST("/create_class", Handlers.Create_class(s.User)) //创建班级
-        monitor:=teacher.Group("/class", Middlewares.HaveClass(s.User))//班级负责人
+        teacher.POST("/create_class", Handlers.Create_class(s.KetangpaiDB)) //创建班级
+        monitor:=teacher.Group("/class", Middlewares.HaveClass(s.KetangpaiDB))//班级负责人
         {
             monitor.POST("/assign_homework", Handlers.Assign_homework(s.Exercise,s.TestBank))//布置作业
             monitor.GET("/check_test_status", Handlers.Check_test_status(s.Exercise))//查看考试情况
-            monitor.POST("/dissolve", Handlers.Dissolve(s.User,s.Exercise))         //解散班级
-            monitor.POST("/fire", Handlers.Fire(s.User))                 			//开除某人
+            monitor.POST("/dissolve", Handlers.Dissolve(s.KetangpaiDB,s.Exercise))         //解散班级
+            monitor.POST("/fire", Handlers.Fire(s.KetangpaiDB))                 			//开除某人
             monitor.POST("/mark",Handlers.Mark(s.Exercise))//打分
+            monitor.POST("/add",Handlers.Add(s.KetangpaiDB))//把某些人添加进班级
         }
     }
 
-    student := user.Group("/", Middlewares.IsStudent(s.User))//普通学生
+    student := user.Group("/", Middlewares.IsStudent(s.KetangpaiDB))//普通学生
     {
-        classmate := student.Group("/class", Middlewares.HaveClass(s.User)) //同学
+        classmate := student.Group("/class", Middlewares.HaveClass(s.KetangpaiDB)) //同学
         {
             classmate.GET("/assignment", Handlers.Assignment(s.Exercise)) //查看任务-限时考试、作业
             classmate.GET("/grade", Handlers.Grade(s.Exercise))                       //成绩分析
@@ -249,21 +253,17 @@ GET ws://host/setting
 
 form-data
 
-| KEY     | 类型 | 描述                     |
-| ------- | ---- | ------------------------ |
-| name    | 可选 | 名字                     |
-| pwd     | 可选 | 密码                     |
-| uid     | 必选 | 由前端返回，不对用户开放 |
-| classid | 可选 | 班级号                   |
-| type    | 可选 | 目前对用户开放           |
+| KEY  | 类型 | 描述                     |
+| ---- | ---- | ------------------------ |
+| name | 可选 | 名字                     |
+| pwd  | 可选 | 密码                     |
+| uid  | 必选 | 由前端返回，不对用户开放 |
 
 ```json
 {
     "name":"",
     "pwd":"",
-    "uid":,
-    "classid":,
-    "type":
+    "uid":
 }
 ```
 
@@ -482,6 +482,26 @@ POST host/retrieve?email
 
 > email为注册时预留的邮箱，稍后会以邮件的方式发送
 
+### 22.选择用户类型
+
+```http
+POST host/set_type?type
+```
+
+> 直接指明类型就好
+
+23.添加学生到自己班级
+
+```http
+POST host/class/add
+```
+
+```json
+[]
+```
+
+> 学生的UID列表
+
 ## services
 
 
@@ -663,6 +683,63 @@ message juser{
 
 > 主要任务是token操作，用Redis进行token的缓存
 
+### KetangpaiDB
+
+```protobuf
+syntax="proto3";
+option go_package="./KetangpaiDB";
+package ketangpaiDB;
+
+service ketangpaiDB{
+  rpc create_user(uid)returns(uid){};//创建用户(用户中心已存在-适应用户中心的UID创建记录)
+  rpc set_type(member)returns(member){};//设置用户类型
+  rpc get_user_class(uid)returns(classid){};//获取班级
+  rpc get_user_type(uid)returns(typecode){};//获取用户类型
+  rpc create_class(class)returns(class){};//创建一个班级
+  rpc get_class_info(classid)returns(class){};//获取班级所有信息
+  rpc get_class_teacher(classid)returns(uid){};//获取班级负责人ID
+  rpc get_class_name(classid)returns(classname){};//获取班级名字
+  rpc dissolve_class(classid)returns(empty){};//解散班级
+  rpc refreshing_class_data(class)returns(class){};//更新班级数据-名字、老师
+  rpc fire_student(uid)returns(class){};//将某学生从班级里面删除
+  rpc add_student(member)returns(class){};//添加某个学生到班级
+}
+
+message empty{
+}
+
+message uid{
+  uint32 uid=1;
+}
+
+message classid{
+  uint32 classid=1;
+}
+
+message typecode{
+  uint32 typecode=1;
+}
+
+message classname{
+  string name=1;
+}
+
+message member{
+  uint32 uid=1;
+  uint32 classid=2;
+  uint32 type=3;
+}
+
+message class{
+  uint32 classid=1;
+  uint32 teacher=2;
+  string name=3;
+  repeated uint32 students=4;
+}
+```
+
+> ketangpai数据
+
 ### NetworkDisk
 
 > 班级文件管理
@@ -756,7 +833,6 @@ message listinfo{
   string name=1;//榜名
   repeated string list=2;//榜单-仅对象/对象+分值、、、
 }
-
 ```
 
 
@@ -803,7 +879,7 @@ message test{
 
 ### UserCenter
 
-> 储存用户信息
+> 储存用户通用信息
 
 ```protobuf
 syntax="proto3";
@@ -811,27 +887,14 @@ option go_package="./UserCenter";
 package UserCenter;
 
 service UserCenter{
+  rpc refreshing_user_data(uuser)returns(uuser){};//刷新用户数据
   rpc creat_user(uuser) returns(uuser){};//创建用户
   rpc get_user_info(id) returns(uuser){};//获取用户所有信息
   rpc get_user_info_by_email(s)returns(uuser){};//参照邮箱返回用户信息
   rpc get_user_pwd(id)returns(s){};//获取密码
   rpc get_user_name(id)returns(s){};//获取名字
   rpc get_user_email(id)returns(s){};//获取联系方式
-  rpc get_user_class(id)returns(id){};//获取班级
-  rpc get_user_type(id)returns(id){};//获取用户类型
   rpc user_is_Exist(s)returns(right){};//判断用户是否存在:以邮箱为标准
-  rpc refreshing_user_data(uuser)returns(uuser){};//刷新用户数据
-
-  rpc create_class(class)returns(class){};//创建一个班级
-  rpc get_class_info(id)returns(class){};//获取班级所有信息
-  rpc get_class_teacher(id)returns(id){};//获取班级负责人ID
-  rpc get_class_name(id)returns(s){};//获取班级名字
-  rpc dissolve_class(id)returns(empty){};//解散班级
-  rpc refreshing_class_data(class)returns(class){};//更新班级数据-名字、老师
-  rpc fire_student(id)returns(class){};//将某学生从班级里面删除
-}
-
-message empty{
 }
 
 message id{
@@ -850,16 +913,7 @@ message uuser{
   uint32 uid=2;
   string name=1;
   string pwd=3;
-  uint32 type=4;
-  uint32 classid=5;
   string email=6;
-}
-
-message class{
-  uint32 classid=1;
-  uint32 teacher=2;
-  string name=3;
-  repeated uint32 students=4;
 }
 ```
 
@@ -870,3 +924,37 @@ message class{
 > 收集日志，使用rabbitmq
 
 > 关于该服务：这部分写得并不好，因为error等级没有明确的划分，不管是因为用户的数据有问题还是程序执行过程中自己产生的问题都一视同仁，这样并不利于后面的维护以及及时报警(打算用邮件通知)。
+
+## RBAC
+
+```mermaid
+graph LR
+1{/ </br> 1.未登录}-->1.1(/register </br> 1.1注册)
+1-->1.2(/login </br> 1.2登录)
+1-->1.3(/retrieve </br> 1.3找回密码)
+1==>2{/ </br> 2.管理员}
+2-->2.1(/testbank_upload </br> 2.1上传题目到题库)
+1==>3{/ </br> 3.普通用户}
+3-->3.1(/logout </br> 3.1登出)
+3-->3.2(/setting </br> 3.2更改用户信息)
+3-->3.3(/set_type </br> 3.3设置用户类别)
+3==>4{/class </br> 4.班级成员}
+4-->4.1(file/upload </br> 4.1上传班级文件)
+4-->4.2(/file/download </br> 4.2下载班级文件)
+4-->4.3(/file/contents </br> 4.3班级文件列表)
+4-->4.4(/forum </br> 4.4班级讨论区)
+4-->4.5(/forum/messages </br> 4.5查看留言)
+4-->4.6(/chatroom </br> 4.6进入教室)
+4==>5{/ </br> 5.有班级的老师}
+5-->5.1(/assign_homework </br> 5.1给自己的班级布置测试)
+5-->5.2(/check_test_status </br> 5.2查看测试情况)
+5-->5.3(/dissolve </br> 5.3解散班级)
+5-->5.4(/fire </br> 5.4把某人从班级里面移除)
+5-->5.5(/mark </br> 5.5给同学的提交记录打分)
+5-->5.6(/add </br> 5.6添加学生到自己的班级)
+3==>6{/ </br> 6.没有班级的老师}
+6-->6.1(/create_class </br> 6.1创建班级)
+```
+
+
+

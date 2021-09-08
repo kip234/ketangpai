@@ -55,16 +55,9 @@ func Setting(u UserCenter.UserCenterClient,e Email.EmailClient) gin.HandlerFunc 
 				conn.WriteJSON(err)
 				return
 			}
-			if newu.Uid!=uid{//UID对不上
+			if newu.Uid!=uint32(uid){//UID对不上
 				conn.WriteMessage(websocket.TextMessage,[]byte("Uid conflict"))
 				return
-			}
-			if newu.Type==UserCenter.Administrator{//非法操作
-				conn.WriteMessage(websocket.TextMessage,[]byte("illegal operation"))
-				return
-			}
-			if newu.Type>=UserCenter.TypeNum{
-				conn.WriteJSON("invalid type")
 			}
 
 			//测试验证码
@@ -112,8 +105,6 @@ func Setting(u UserCenter.UserCenterClient,e Email.EmailClient) gin.HandlerFunc 
 				Uid:newu.Uid,
 				Name:newu.Name,
 				Pwd:newu.Pwd,
-				Type:newu.Type,
-				Classid:newu.Classid,
 				Email:newu.Email,
 			})
 			if err!=nil {
@@ -129,7 +120,7 @@ func Setting(u UserCenter.UserCenterClient,e Email.EmailClient) gin.HandlerFunc 
 
 		if c.Request.Method=="POST"{
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			newu,err:=u.GetUserInfo(ctx,&UserCenter.Id{I: uid})
+			newu,err:=u.GetUserInfo(ctx,&UserCenter.Id{I: uint32(uid)})
 			if err!=nil {
 				c.JSON(http.StatusInternalServerError,gin.H{
 					"error":err.Error(),
@@ -141,6 +132,5 @@ func Setting(u UserCenter.UserCenterClient,e Email.EmailClient) gin.HandlerFunc 
 			})
 			return
 		}
-		//c.JSON(http.)
 	}
 }

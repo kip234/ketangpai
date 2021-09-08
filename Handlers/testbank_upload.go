@@ -38,7 +38,7 @@ func Testbank_upload(t TestBank.TestBankClient)gin.HandlerFunc{
 			return
 		}
 		
-		test.Uploader=uid
+		test.Uploader=uint32(uid)
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
 		re,err:=t.Upload(ctx,&TestBank.Test{
 			Id:test.Id,

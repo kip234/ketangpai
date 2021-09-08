@@ -18,7 +18,7 @@ func File_contents(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		re,err:=n.GetContents(ctx,&NetworkDisk.Classid{Id: classid})
+		re,err:=n.GetContents(ctx,&NetworkDisk.Classid{Id: uint32(classid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

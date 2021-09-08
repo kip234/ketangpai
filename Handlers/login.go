@@ -19,7 +19,7 @@ func Login(jwt JWT.JWTClient) gin.HandlerFunc {
 		}
 
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		t,err:=jwt.RefreshToken(ctx,&JWT.Juser{Uid: uid})
+		t,err:=jwt.RefreshToken(ctx,&JWT.Juser{Uid: uint32(uid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

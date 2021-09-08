@@ -2,6 +2,7 @@
 package Handlers
 
 import (
+	"KeTangPai/services/DC/KetangpaiDB"
 	"KeTangPai/services/DC/UserCenter"
 	"KeTangPai/services/Email"
 	"context"
@@ -16,7 +17,7 @@ import (
 )
 
 //注册后会返回UID
-func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.HandlerFunc {
+func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClient,e Email.EmailClient ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		grader:=websocket.Upgrader{
 			Subprotocols: []string{c.GetHeader("Sec-WebSocket-Protocol")},
@@ -41,9 +42,6 @@ func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.Han
 			panic(err)
 			conn.WriteJSON(err)
 			return
-		}
-		if user.Type>=UserCenter.TypeNum{
-			conn.WriteJSON("invalid type")
 		}
 		//邮箱是否已经注册？
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
@@ -86,9 +84,6 @@ func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.Han
 			return
 		case <-channel:
 			_, p, err := conn.ReadMessage()
-			//if err==io.EOF {
-			//	continue
-			//}
 			if err != nil {
 				panic(err)
 				conn.WriteJSON(err)
@@ -106,12 +101,13 @@ func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.Han
 				conn.WriteMessage(websocket.TextMessage,[]byte("验证码错误"))
 			}
 		}
-		u,err:=uservice.CreatUser(context.Background(),&UserCenter.Uuser{
+
+		//用户中心进行记录
+		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
+		u,err:=uservice.CreatUser(ctx,&UserCenter.Uuser{
 			Uid:user.Uid,
 			Name:user.Name,
 			Pwd:user.Pwd,
-			Type:user.Type,
-			Classid:user.Classid,
 			Email:user.Email,
 		})
 		if err!=nil{
@@ -119,6 +115,16 @@ func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.Han
 			conn.WriteJSON(err)
 			cancle()
 		}
+
+		//katangpai进行记录
+		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
+		_,err=k.CreateUser(ctx,&KetangpaiDB.Uid{Uid: user.Uid})
+		if err!=nil{
+			panic(err)
+			conn.WriteJSON(err)
+			cancle()
+		}
+
 		err=conn.WriteJSON(u)
 		if err!=nil{
 			panic(err)

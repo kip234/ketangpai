@@ -110,8 +110,8 @@ func (t *TestBankService)Download(stream TestBank_DownloadServer) error{
 //自动生成一套试卷
 func (t *TestBankService)GenerateTest(in *Testconf,stream TestBank_GenerateTestServer) error{
 	Log.Send("TestBank.GenerateTest.info",in)
-	var  subjective []int32
-	var  objective []int32
+	var  subjective []uint32
+	var  objective []uint32
 	err:=t.db.Model(Testdb{}).Where(Testdb{Typ: Subjective,Discipline: in.Discipline}).Select("id").Find(&subjective).Error
 	if err!=nil {
 		Log.Send("TestBank.GenerateTest.error",err.Error())

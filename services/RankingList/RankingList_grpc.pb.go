@@ -18,10 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RankingListClient interface {
-	Flushlist(ctx context.Context, in *RankingList.Flushin, opts ...grpc.CallOption) (*RankingList.Flushout, error)
-	Getlistinfo(ctx context.Context, in *RankingList.Listname, opts ...grpc.CallOption) (*RankingList.Listinfo, error)
-	Dellist(ctx context.Context, in *RankingList.Listname, opts ...grpc.CallOption) (*RankingList.Empty, error)
-	Getranking(ctx context.Context, in *RankingList.Members, opts ...grpc.CallOption) (*RankingList.Rankings, error)
+	Flushlist(ctx context.Context, in *Flushin, opts ...grpc.CallOption) (*Flushout, error)
+	Getlistinfo(ctx context.Context, in *Listname, opts ...grpc.CallOption) (*Listinfo, error)
+	Dellist(ctx context.Context, in *Listname, opts ...grpc.CallOption) (*Empty, error)
+	Getranking(ctx context.Context, in *Members, opts ...grpc.CallOption) (*Rankings, error)
 }
 
 type rankingListClient struct {
@@ -32,8 +32,8 @@ func NewRankingListClient(cc grpc.ClientConnInterface) RankingListClient {
 	return &rankingListClient{cc}
 }
 
-func (c *rankingListClient) Flushlist(ctx context.Context, in *RankingList.Flushin, opts ...grpc.CallOption) (*RankingList.Flushout, error) {
-	out := new(RankingList.Flushout)
+func (c *rankingListClient) Flushlist(ctx context.Context, in *Flushin, opts ...grpc.CallOption) (*Flushout, error) {
+	out := new(Flushout)
 	err := c.cc.Invoke(ctx, "/RankingList.RankingList/flushlist", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -41,8 +41,8 @@ func (c *rankingListClient) Flushlist(ctx context.Context, in *RankingList.Flush
 	return out, nil
 }
 
-func (c *rankingListClient) Getlistinfo(ctx context.Context, in *RankingList.Listname, opts ...grpc.CallOption) (*RankingList.Listinfo, error) {
-	out := new(RankingList.Listinfo)
+func (c *rankingListClient) Getlistinfo(ctx context.Context, in *Listname, opts ...grpc.CallOption) (*Listinfo, error) {
+	out := new(Listinfo)
 	err := c.cc.Invoke(ctx, "/RankingList.RankingList/getlistinfo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (c *rankingListClient) Getlistinfo(ctx context.Context, in *RankingList.Lis
 	return out, nil
 }
 
-func (c *rankingListClient) Dellist(ctx context.Context, in *RankingList.Listname, opts ...grpc.CallOption) (*RankingList.Empty, error) {
-	out := new(RankingList.Empty)
+func (c *rankingListClient) Dellist(ctx context.Context, in *Listname, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/RankingList.RankingList/dellist", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -59,8 +59,8 @@ func (c *rankingListClient) Dellist(ctx context.Context, in *RankingList.Listnam
 	return out, nil
 }
 
-func (c *rankingListClient) Getranking(ctx context.Context, in *RankingList.Members, opts ...grpc.CallOption) (*RankingList.Rankings, error) {
-	out := new(RankingList.Rankings)
+func (c *rankingListClient) Getranking(ctx context.Context, in *Members, opts ...grpc.CallOption) (*Rankings, error) {
+	out := new(Rankings)
 	err := c.cc.Invoke(ctx, "/RankingList.RankingList/getranking", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -72,10 +72,10 @@ func (c *rankingListClient) Getranking(ctx context.Context, in *RankingList.Memb
 // All implementations must embed UnimplementedRankingListServer
 // for forward compatibility
 type RankingListServer interface {
-	Flushlist(context.Context, *RankingList.Flushin) (*RankingList.Flushout, error)
-	Getlistinfo(context.Context, *RankingList.Listname) (*RankingList.Listinfo, error)
-	Dellist(context.Context, *RankingList.Listname) (*RankingList.Empty, error)
-	Getranking(context.Context, *RankingList.Members) (*RankingList.Rankings, error)
+	Flushlist(context.Context, *Flushin) (*Flushout, error)
+	Getlistinfo(context.Context, *Listname) (*Listinfo, error)
+	Dellist(context.Context, *Listname) (*Empty, error)
+	Getranking(context.Context, *Members) (*Rankings, error)
 	mustEmbedUnimplementedRankingListServer()
 }
 
@@ -83,16 +83,16 @@ type RankingListServer interface {
 type UnimplementedRankingListServer struct {
 }
 
-func (UnimplementedRankingListServer) Flushlist(context.Context, *RankingList.Flushin) (*RankingList.Flushout, error) {
+func (UnimplementedRankingListServer) Flushlist(context.Context, *Flushin) (*Flushout, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Flushlist not implemented")
 }
-func (UnimplementedRankingListServer) Getlistinfo(context.Context, *RankingList.Listname) (*RankingList.Listinfo, error) {
+func (UnimplementedRankingListServer) Getlistinfo(context.Context, *Listname) (*Listinfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Getlistinfo not implemented")
 }
-func (UnimplementedRankingListServer) Dellist(context.Context, *RankingList.Listname) (*RankingList.Empty, error) {
+func (UnimplementedRankingListServer) Dellist(context.Context, *Listname) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Dellist not implemented")
 }
-func (UnimplementedRankingListServer) Getranking(context.Context, *RankingList.Members) (*RankingList.Rankings, error) {
+func (UnimplementedRankingListServer) Getranking(context.Context, *Members) (*Rankings, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Getranking not implemented")
 }
 func (UnimplementedRankingListServer) mustEmbedUnimplementedRankingListServer() {}
@@ -109,7 +109,7 @@ func RegisterRankingListServer(s grpc.ServiceRegistrar, srv RankingListServer) {
 }
 
 func _RankingList_Flushlist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RankingList.Flushin)
+	in := new(Flushin)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -121,13 +121,13 @@ func _RankingList_Flushlist_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/RankingList.RankingList/flushlist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RankingListServer).Flushlist(ctx, req.(*RankingList.Flushin))
+		return srv.(RankingListServer).Flushlist(ctx, req.(*Flushin))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _RankingList_Getlistinfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RankingList.Listname)
+	in := new(Listname)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -139,13 +139,13 @@ func _RankingList_Getlistinfo_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/RankingList.RankingList/getlistinfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RankingListServer).Getlistinfo(ctx, req.(*RankingList.Listname))
+		return srv.(RankingListServer).Getlistinfo(ctx, req.(*Listname))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _RankingList_Dellist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RankingList.Listname)
+	in := new(Listname)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -157,13 +157,13 @@ func _RankingList_Dellist_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/RankingList.RankingList/dellist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RankingListServer).Dellist(ctx, req.(*RankingList.Listname))
+		return srv.(RankingListServer).Dellist(ctx, req.(*Listname))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _RankingList_Getranking_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RankingList.Members)
+	in := new(Members)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func _RankingList_Getranking_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/RankingList.RankingList/getranking",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RankingListServer).Getranking(ctx, req.(*RankingList.Members))
+		return srv.(RankingListServer).Getranking(ctx, req.(*Members))
 	}
 	return interceptor(ctx, in, info, handler)
 }
