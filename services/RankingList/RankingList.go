@@ -97,7 +97,7 @@ func (r *RankingListService)Getranking(c context.Context,in *Members) (ranks *Ra
 		return &Rankings{},errors.New("timeout")
 	default:
 	}
-	ranks.Rank=make([]uint64,len(in.Members))
+	ranks.Rank=make([]int64,len(in.Members))
 	for index,i:=range in.Members{
 		rank,err:=r.pool.ZREVRANK(in.Name,i)
 		if err!=nil {

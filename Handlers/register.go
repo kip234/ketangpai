@@ -2,7 +2,6 @@
 package Handlers
 
 import (
-	"KeTangPai/services/DC/KetangpaiDB"
 	"KeTangPai/services/DC/UserCenter"
 	"KeTangPai/services/Email"
 	"context"
@@ -17,7 +16,7 @@ import (
 )
 
 //注册后会返回UID
-func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClient,e Email.EmailClient ) gin.HandlerFunc {
+func Register(uservice UserCenter.UserCenterClient,e Email.EmailClient ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		grader:=websocket.Upgrader{
 			Subprotocols: []string{c.GetHeader("Sec-WebSocket-Protocol")},
@@ -44,7 +43,7 @@ func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClie
 			return
 		}
 		//邮箱是否已经注册？
-		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
+		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit)
 		ok,err:=uservice.UserIs_Exist(ctx,&UserCenter.S{S: user.Email})
 		if err != nil {
 			panic(err)
@@ -57,7 +56,7 @@ func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClie
 		}
 
 		//测试邮箱地址
-		ctx,cancle:=context.WithTimeout(context.Background(),emailTimeLimit*time.Second)
+		ctx,cancle:=context.WithTimeout(context.Background(),emailTimeLimit)
 		rand.Seed(time.Now().Unix())
 		code:=rand.Int()%1e6
 		_,err=e.Send(context.Background(),&Email.Mail{Subject: subject,To: user.Email,Content: fmt.Sprintf(body,code)})
@@ -67,7 +66,7 @@ func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClie
 			cancle()
 			return
 		}
-		err=conn.WriteMessage(websocket.TextMessage,[]byte(fmt.Sprintf("验证码已发送给%s请在%d秒内提交验证码",user.Email,emailTimeLimit)))
+		err=conn.WriteMessage(websocket.TextMessage,[]byte(fmt.Sprintf("验证码已发送给%s请及时提交验证码",user.Email)))
 		if err != nil {
 			panic(err)
 			conn.WriteJSON(err)
@@ -103,10 +102,9 @@ func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClie
 		}
 
 		//用户中心进行记录
-		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		u,err:=uservice.CreatUser(ctx,&UserCenter.Uuser{
-			Uid:user.Uid,
-			Name:user.Name,
+		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit)
+		id,err:=uservice.CreatUser(ctx,&UserCenter.Uuser{
+			//Id:user.Id,
 			Pwd:user.Pwd,
 			Email:user.Email,
 		})
@@ -116,16 +114,7 @@ func Register(uservice UserCenter.UserCenterClient,k KetangpaiDB.KetangpaiDBClie
 			cancle()
 		}
 
-		//katangpai进行记录
-		ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		_,err=k.CreateUser(ctx,&KetangpaiDB.Uid{Uid: user.Uid})
-		if err!=nil{
-			panic(err)
-			conn.WriteJSON(err)
-			cancle()
-		}
-
-		err=conn.WriteJSON(u)
+		err=conn.WriteJSON(id)
 		if err!=nil{
 			panic(err)
 			conn.WriteJSON(err)

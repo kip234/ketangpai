@@ -20,16 +20,17 @@ const (
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="123456"
+	SqlUserPwd="root"
 	SqlAddr=":3306"
 )
 
 var sql *gorm.DB
 
 type Memberdb struct{
-	Uid 	uint32	`form:"uid" json:"uid" gorm:"not null;unique"`
+	Id 		uint32	`form:"uid" json:"id" gorm:"not null;unique"`//用户中心的ID
+	Uid 	uint32	`form:"uid" json:"uid" gorm:"primaryKey"`//本产品的ID
 	Classid uint32	`form:"classid" json:"classid" gorm:"not null;default:0;"`
-	Type 	uint32	`form:"type" json:"type" gorm:"not null;default:0;"`
+	Name	string	`form:"classid" json:"name" gorm:"not null"`
 }
 
 type Classdb struct {

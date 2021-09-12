@@ -10,7 +10,7 @@ import (
 
 func Login(jwt JWT.JWTClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid,err:=getInt("uid",c)//获取UID
+		id,err:=getUint("id",c)//获取UID
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -19,7 +19,7 @@ func Login(jwt JWT.JWTClient) gin.HandlerFunc {
 		}
 
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-		t,err:=jwt.RefreshToken(ctx,&JWT.Juser{Uid: uint32(uid)})
+		t,err:=jwt.RefreshToken(ctx,&JWT.Juser{Id: id})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

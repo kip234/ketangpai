@@ -25,12 +25,12 @@ func(u *UserCenterService)CreatUser(c context.Context,user *Uuser) (*Uuser, erro
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
-	tmp:=Userdb{Name:user.Name,Pwd: user.Pwd,Email: user.Email}
+	tmp:=Userdb{Pwd: user.Pwd,Email: user.Email}
 	err:=u.db.Model(&Userdb{}).Create(&tmp).Error
 	if err!=nil {
 		Log.Send("UserCenter.CreatUser.error",err.Error())
 	}
-	user.Uid=tmp.Uid
+	user.Id=tmp.Id
 	return user, err
 }
 
@@ -44,7 +44,7 @@ func(u *UserCenterService)GetUserInfo(c context.Context,in *Id) (*Uuser, error){
 	default:
 	}
 	user:=Uuser{}
-	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Find(&user).Error
+	err:=u.db.Model(&Userdb{}).Where("id=?",in.I).Find(&user).Error
 	if err!=nil {
 		Log.Send("UserCenter.GetUserInfo.error",err.Error())
 	}
@@ -78,7 +78,7 @@ func(u *UserCenterService)GetUserPwd(c context.Context,in *Id) (*S, error){
 	default:
 	}
 	var pwd string
-	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("pwd").Find(&pwd).Error
+	err:=u.db.Model(&Userdb{}).Where("id=?",in.I).Select("pwd").Find(&pwd).Error
 	if err!=nil {
 		Log.Send("UserCenter.GetUserPwd.error",err.Error())
 	}
@@ -95,7 +95,7 @@ func(u *UserCenterService)GetUserName(c context.Context,in *Id) (*S, error){
 	default:
 	}
 	var name string
-	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("name").Find(&name).Error
+	err:=u.db.Model(&Userdb{}).Where("id=?",in.I).Select("name").Find(&name).Error
 	if err!=nil {
 		Log.Send("UserCenter.GetUserName.error",err.Error())
 	}
@@ -112,7 +112,7 @@ func(u *UserCenterService)GetUserEmail(c context.Context,in *Id) (*S, error){
 	default:
 	}
 	var email string
-	err:=u.db.Model(&Userdb{}).Where("uid=?",in.I).Select("email").Find(&email).Error
+	err:=u.db.Model(&Userdb{}).Where("id=?",in.I).Select("email").Find(&email).Error
 	if err!=nil {
 		Log.Send("UserCenter.GetUserEmail.error",err.Error())
 	}
@@ -134,7 +134,7 @@ func(u *UserCenterService)UserIs_Exist(c context.Context,in *S) (*Right, error){
 		Log.Send("UserCenter.UserIs_Exist.error",err.Error())
 		return &Right{Right:false},err
 	}
-	if tmpu.Uid>0{
+	if tmpu.Id>0{
 		return &Right{Right:true},err
 	}
 	return &Right{Right:false},err
@@ -149,14 +149,12 @@ func (u *UserCenterService)RefreshingUserData(c context.Context,user *Uuser) (*U
 		return &Uuser{},errors.New("timeout")
 	default:
 	}
-	if user.GetUid()<1{
-		//log.Printf("RefreshingUserData> uid illegal\n")
-		return &Uuser{},errors.New("uid illegal")
+	if user.GetId()<1{
+		return &Uuser{},errors.New("id illegal")
 	}
-	err:=u.db.Model(&Userdb{}).Where("uid=?",user.Uid).Updates(
+	err:=u.db.Model(&Userdb{}).Where("id=?",user.Id).Updates(
 		Userdb{
-			Uid: user.Uid,
-			Name: user.Name,
+			Id: user.Id,
 			Pwd: user.Pwd,
 			Email:user.Email,
 		}).Error

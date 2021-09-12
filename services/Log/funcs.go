@@ -1,7 +1,6 @@
 package Log
 
 import (
-	"log"
 	"os"
 	"time"
 )
@@ -29,7 +28,8 @@ func flushFile(dir string,file *os.File) (*os.File,error) {
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
+		panic(err)
+		//log.Fatalf("%s: %s", msg, err)
 	}
 }
 

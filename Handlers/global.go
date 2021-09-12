@@ -1,8 +1,10 @@
 package Handlers
 
+import "time"
+
 const subject = "(0_0)用户中心"
-const emailTimeLimit=600
-const serviceTimeLimit=6
+const emailTimeLimit=time.Second*6
+const serviceTimeLimit=time.Second*6
 var body = `
 		<html>
 		<body>

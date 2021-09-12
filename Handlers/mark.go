@@ -11,7 +11,7 @@ import (
 
 func Mark(e  Exercise.ExerciseClient) gin.HandlerFunc {
 	return func(c *gin.Context){
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if nil!=err {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

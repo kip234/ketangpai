@@ -23,7 +23,6 @@ type UserCenterClient interface {
 	GetUserInfo(ctx context.Context, in *Id, opts ...grpc.CallOption) (*Uuser, error)
 	GetUserInfoByEmail(ctx context.Context, in *S, opts ...grpc.CallOption) (*Uuser, error)
 	GetUserPwd(ctx context.Context, in *Id, opts ...grpc.CallOption) (*S, error)
-	GetUserName(ctx context.Context, in *Id, opts ...grpc.CallOption) (*S, error)
 	GetUserEmail(ctx context.Context, in *Id, opts ...grpc.CallOption) (*S, error)
 	UserIs_Exist(ctx context.Context, in *S, opts ...grpc.CallOption) (*Right, error)
 }
@@ -81,15 +80,6 @@ func (c *userCenterClient) GetUserPwd(ctx context.Context, in *Id, opts ...grpc.
 	return out, nil
 }
 
-func (c *userCenterClient) GetUserName(ctx context.Context, in *Id, opts ...grpc.CallOption) (*S, error) {
-	out := new(S)
-	err := c.cc.Invoke(ctx, "/UserCenter.UserCenter/get_user_name", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *userCenterClient) GetUserEmail(ctx context.Context, in *Id, opts ...grpc.CallOption) (*S, error) {
 	out := new(S)
 	err := c.cc.Invoke(ctx, "/UserCenter.UserCenter/get_user_email", in, out, opts...)
@@ -117,7 +107,6 @@ type UserCenterServer interface {
 	GetUserInfo(context.Context, *Id) (*Uuser, error)
 	GetUserInfoByEmail(context.Context, *S) (*Uuser, error)
 	GetUserPwd(context.Context, *Id) (*S, error)
-	GetUserName(context.Context, *Id) (*S, error)
 	GetUserEmail(context.Context, *Id) (*S, error)
 	UserIs_Exist(context.Context, *S) (*Right, error)
 	mustEmbedUnimplementedUserCenterServer()
@@ -141,9 +130,6 @@ func (UnimplementedUserCenterServer) GetUserInfoByEmail(context.Context, *S) (*U
 }
 func (UnimplementedUserCenterServer) GetUserPwd(context.Context, *Id) (*S, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserPwd not implemented")
-}
-func (UnimplementedUserCenterServer) GetUserName(context.Context, *Id) (*S, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserName not implemented")
 }
 func (UnimplementedUserCenterServer) GetUserEmail(context.Context, *Id) (*S, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserEmail not implemented")
@@ -254,24 +240,6 @@ func _UserCenter_GetUserPwd_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UserCenter_GetUserName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Id)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserCenterServer).GetUserName(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/UserCenter.UserCenter/get_user_name",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserCenterServer).GetUserName(ctx, req.(*Id))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UserCenter_GetUserEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Id)
 	if err := dec(in); err != nil {
@@ -334,10 +302,6 @@ var UserCenter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "get_user_pwd",
 			Handler:    _UserCenter_GetUserPwd_Handler,
-		},
-		{
-			MethodName: "get_user_name",
-			Handler:    _UserCenter_GetUserName_Handler,
 		},
 		{
 			MethodName: "get_user_email",

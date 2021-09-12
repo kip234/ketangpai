@@ -10,7 +10,7 @@ import (
 
 func History(f Forum.ForumClient )gin.HandlerFunc{
 	return func(c *gin.Context){
-		classid,err:=getInt("classid",c)
+		classid,err:=getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

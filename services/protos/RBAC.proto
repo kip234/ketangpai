@@ -1,0 +1,67 @@
+syntax="proto3";
+option go_package="./RBAC";
+package RBAC;
+
+service RBAC{
+  rpc get_role(uids)returns(roles){};//获取用户的角色
+  rpc get_paths(path)returns(paths){};//获取所有的 路由子节点
+  rpc add_role(roles)returns(empty){};//添加角色
+  rpc refresh_paths(paths)returns(empty){};//添加路由分支 - 第一个元素为父节点
+  rpc refresh_user_role(users_roles)returns(empty){};//添加 用户-角色 关系
+  rpc cheak_role_path(roles_paths)returns(Bools){};//验证角色与路由的关系
+  rpc Cache(empty)returns(empty){};//刷新缓存
+}
+
+message Bool{
+  bool bool=1;
+}
+
+message Bools{
+  repeated bool Bools=1;
+}
+
+message uid{
+  uint32 uid=1;
+}
+
+message uids{
+  repeated uint32 uids=1;
+}
+
+message role{
+  string role=1;
+}
+
+message roles{
+  repeated string roles=1;
+}
+
+message empty{}
+
+message path{
+  string path=1;//路径名
+}
+
+message paths{
+  repeated string paths=1;
+}
+
+message role_path{
+  string role=1;
+  string path=2;
+}
+
+message roles_paths{
+  repeated string roles=1;
+  repeated string paths=2;
+}
+
+message user_role{
+  uint32 uid=1;
+  string role=2;
+}
+
+message users_roles{
+  repeated uint32 uids=1;
+  repeated string roles=2;
+}

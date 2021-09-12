@@ -10,7 +10,7 @@ import (
 
 func Messages(f Forum.ForumClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

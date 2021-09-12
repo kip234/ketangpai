@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const Addr		= ":8085"
+const Addr		= ":8086"
 
 var sql *gorm.DB
 
@@ -34,7 +34,7 @@ const (
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="123456"
+	SqlUserPwd="root"
 	SqlAddr=":3306"
 )
 
@@ -47,6 +47,8 @@ type Testdb struct {
 	Location string`form:"location" json:"location" gorm:"not null"`		//储存路径
 	Uploader uint32 `form:"uploader" json:"uploader" gorm:"not null"` //上传者
 	Discipline uint32 `form:"discipline" json:"discipline" gorm:"not null"`//学科
+	Withans bool ` form:"withans" json:"withans" gorm:"not null;default:false"`//自带答案？-千万不要binding required
+	AnsLocation	string	`json:"ans_location" gorm:"not null"`//答案存储路径
 }
 
 func InitGorm() {

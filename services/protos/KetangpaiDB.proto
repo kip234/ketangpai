@@ -3,10 +3,12 @@ option go_package="./KetangpaiDB";
 package ketangpaiDB;
 
 service ketangpaiDB{
-  rpc create_user(uid)returns(uid){};//创建用户(用户中心已存在-适应用户中心的UID创建记录)
-  rpc set_type(member)returns(member){};//设置用户类型
+  rpc create_user(user)returns(user){};//创建用户(用户中心已存在-适应用户中心的UID创建记录)
+  rpc get_users(empty)returns(users){};//获取所有用户
+  rpc get_user_info(user)returns(user){}//获取用户所有信息
+  rpc get_user_name(uids)returns(names){};//获取名字
+  rpc set_user_name(user)returns(name){};//修改用户名
   rpc get_user_class(uid)returns(classid){};//获取班级
-  rpc get_user_type(uid)returns(typecode){};//获取用户类型
   rpc create_class(class)returns(class){};//创建一个班级
   rpc get_class_info(classid)returns(class){};//获取班级所有信息
   rpc get_class_teacher(classid)returns(uid){};//获取班级负责人ID
@@ -20,16 +22,35 @@ service ketangpaiDB{
 message empty{
 }
 
+message name{
+  string name=1;
+}
+
+message names{
+  repeated string names=1;
+}
+
 message uid{
   uint32 uid=1;
 }
 
-message classid{
-  uint32 classid=1;
+message uids{
+  repeated uint32 uids=1;
 }
 
-message typecode{
-  uint32 typecode=1;
+message user{
+  uint32 uid=1;//本产品的ID
+  string name=2;
+  uint32 id=3;//用户中心的ID
+  uint32 classid=4;//所属班级
+}
+
+message users{
+  repeated user users=1;
+}
+
+message classid{
+  uint32 classid=1;
 }
 
 message classname{
@@ -39,7 +60,6 @@ message classname{
 message member{
   uint32 uid=1;
   uint32 classid=2;
-  uint32 type=3;
 }
 
 message class{

@@ -5,15 +5,24 @@ package TestBank;
 service TestBank{
   rpc upload(test)returns(test){};//上传一道题
   rpc download(stream testid)returns(stream test){};//下载题目
-  rpc generate_test(testconf)returns(stream testid){};//自动生成一套试卷
+  rpc generate_test(testconf)returns(tests){};//自动生成一套试卷
+  rpc get_ans(testids)returns(anss){};//获取答案
 }
 
 message ans{//答案
   string ans=1;
 }
 
+message anss{
+  repeated string anss=1;
+}
+
 message testid{//试题ID
   uint32 id=1;
+}
+
+message testids{
+  repeated uint32 testids=1;
 }
 
 message testconf{
@@ -30,4 +39,10 @@ message test{
   string name=5;//名字-题目描述
   uint32 uploader=6;//上传者
   uint32 discipline=7;//学科
+  bool  withans=8;//附带答案？
+}
+
+message tests{
+  repeated string tests=1;//JSON文本
+  bytes ans=2;//答案 JSON-byte
 }

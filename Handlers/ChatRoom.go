@@ -12,30 +12,30 @@ import (
 	"time"
 )
 
-func ChatRoom(f Filter.FilterClient,rooms map[int32]*Models.Room,r RankingList.RankingListClient)gin.HandlerFunc{
+func ChatRoom(f Filter.FilterClient,rooms map[uint32]*Models.Room,r RankingList.RankingListClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
 			})
 		}
-		classid,err:=getInt("classid",c)
+		classid,err:=getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
 			})
 		}
-		uname,err:=getStr("uname",c)
+		uname,err:=getStr("name",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
-				"error":"missing necessary parameters",
+				"error":err.Error(),
 			})
 		}
 		classname,err:=getStr("classname",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
-				"error":"missing necessary parameters",
+				"error":err.Error(),
 			})
 		}
 

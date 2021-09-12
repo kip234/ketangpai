@@ -9,14 +9,14 @@ import (
 
 func Logout(j JWT.JWTClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid, err:=getInt("uid",c)
+		id, err:=getUint("id",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
 			})
 			return
 		}
-		_,err=j.DelJwt(context.Background(),&JWT.Juser{Uid: uint32(uid)})
+		_,err=j.DelJwt(context.Background(),&JWT.Juser{Id: uint32(id)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),

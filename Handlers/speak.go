@@ -11,14 +11,14 @@ import (
 
 func Speak(f Forum.ForumClient,fi Filter.FilterClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
 			})
 			return
 		}
-		classid,err:=getInt("classid",c)
+		classid,err:=getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

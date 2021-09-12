@@ -9,7 +9,7 @@ import (
 
 func Add(k KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 	return func(c *gin.Context){
-		classid,err:=getInt("classid",c)
+		classid,err:=getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -18,7 +18,13 @@ func Add(k KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 		}
 
 		var students []uint32
-		c.ShouldBindJSON(&students)
+		err=c.ShouldBindJSON(&students)
+		if err!=nil {
+			c.JSON(http.StatusBadRequest,gin.H{
+				"error":err.Error(),
+			})
+			return
+		}
 		for _,i:=range students{
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit)
 			_,err=k.AddStudent(ctx,&KetangpaiDB.Member{Classid: uint32(classid),Uid: i})

@@ -1,9 +1,9 @@
 package Email
 
-const Addr=":8087"
+const Addr=":8088"
 
 var DefaultEmailService=EmailService{
-	host:"smtp.$^.com:25",
-	user:"$#%&#@%$!@**.com",
-	pwd :"@#$&$^#%@!$",//密码或授权码
+	host:"smtp.qq.com:25",
+	user:"1718600332@qq.com",
+	pwd :"awjwptlmrnrxgijc",//密码或授权码
 }

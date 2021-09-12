@@ -9,59 +9,67 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func BuildRouter(s Services,rooms map[int32]*Models.Room) *gin.Engine {
+func BuildRouter(s Services,rooms map[uint32]*Models.Room) *gin.Engine {
 	server:=gin.Default()
 
-	server.GET("/register", Handlers.Register(s.User,s.KetangpaiDB,s.Email))
+	server.GET("/register", Handlers.Register(s.User,s.Email))
 	server.POST("/login", Middlewares.CheakUserInfo(s.User),Handlers.Login(s.JWT))
 	server.POST("/retrieve",Handlers.Retrieve(s.User,s.Email))//找回密码
 
-	user:=server.Group("/",Middlewares.CheakJWT(s.JWT,s.User))//已登录
+	user:=server.Group("/user",Middlewares.CheakJWT(s.JWT,s.User,s.KetangpaiDB,s.RBAC))//已登录
 	{
 		user.POST("/logout", Handlers.Logout(s.JWT))//注销
-		user.POST("/setting", Handlers.Setting(s.User,s.Email))  //获取信息
-		user.GET("/setting", Handlers.Setting(s.User,s.Email)) //修改信息(email password name) - websocket
+		user.GET("/setting", Handlers.Setting())  //获取信息
+		user.GET("/chpwd", Handlers.Chpwd(s.User,s.Email)) //修改密码 password - websocket
+		user.POST("/chname",Handlers.Chname(s.KetangpaiDB))//改名
+		user.POST("/create_class", Handlers.Create_class(s.KetangpaiDB,s.RBAC)) //创建班级
 
-		user.POST("/set_type",Handlers.Set_type(s.KetangpaiDB))//修改用户类型
-
-
-		admin:=user.Group("/",Middlewares.IsAdmin(s.KetangpaiDB))//管理员？
+		admin:=user.Group("/admin",Middlewares.CheakRole(s.RBAC,"/admin"))//管理员？
 		{
 			admin.POST("/testbank_upload",Handlers.Testbank_upload(s.TestBank))//上传
-		}
 
-		classmember:=user.Group("/class", Middlewares.HaveClass(s.KetangpaiDB))//班级成员
-		{
-			classmember.POST("/file/upload", Handlers.File_upload(s.NetworkDisk))    //上传文件
-			classmember.GET("/file/download", Handlers.File_download(s.NetworkDisk)) //下载文件
-			classmember.GET("/file/contents", Handlers.File_contents(s.NetworkDisk)) //查看目录
-			classmember.GET("/forum", Handlers.History(s.Forum))                     //查看记录
-			classmember.POST("/forum",Handlers.Speak(s.Forum,s.Filter))              //发言
-			classmember.GET("/forum/messages",Handlers.Messages(s.Forum))            //查看留言
-			classmember.GET("/chatroom",Handlers.ChatRoom(s.Filter,rooms,s.RankingList))//进入教室
-		}
-
-		teacher := user.Group("/", Middlewares.IsTeacher(s.KetangpaiDB))//老师
-		{
-			teacher.POST("/create_class", Handlers.Create_class(s.KetangpaiDB)) //创建班级
-			monitor:=teacher.Group("/class", Middlewares.HaveClass(s.KetangpaiDB))//班级负责人
+			rbac:=admin.Group("/rbac")
 			{
-				monitor.POST("/assign_homework", Handlers.Assign_homework(s.Exercise,s.TestBank))//布置作业
-				monitor.GET("/check_test_status", Handlers.Check_test_status(s.Exercise))//查看考试情况
-				monitor.POST("/dissolve", Handlers.Dissolve(s.KetangpaiDB,s.Exercise))         //解散班级
-				monitor.POST("/fire", Handlers.Fire(s.KetangpaiDB))                 			//开除某人
-				monitor.POST("/mark",Handlers.Mark(s.Exercise))//打分
-				monitor.POST("/add",Handlers.Add(s.KetangpaiDB))//把某些人添加进班级
+				rbac.POST("/add/role",Handlers.Add_role(s.RBAC))//添加角色
+				rbac.POST("/add/user_role",Handlers.Add_user_role(s.RBAC))//添加 用户-角色
+				rbac.POST("/add/routes",Handlers.Add_routes(s.RBAC))//添加 路由
+				rbac.POST("/cache",Handlers.Cache(s.RBAC))//刷新缓存
 			}
 		}
 
-		student := user.Group("/", Middlewares.IsStudent(s.KetangpaiDB))//普通学生
+		classmember:=user.Group("/class", Middlewares.CheakRole(s.RBAC,"/class"))//班级成员
 		{
-			classmate := student.Group("/class", Middlewares.HaveClass(s.KetangpaiDB)) //同学
+			file:=classmember.Group("/file")//班级文件操作
 			{
-				classmate.GET("/assignment", Handlers.Assignment(s.Exercise)) //查看任务-限时考试、作业
-				classmate.GET("/grade", Handlers.Grade(s.Exercise))                       //成绩分析
-				classmate.GET("/examination_room",Handlers.Examination_room(s.Exercise,s.Filter))//开始做题
+				file.POST("upload", Handlers.File_upload(s.NetworkDisk))    //上传文件
+				file.GET("download", Handlers.File_download(s.NetworkDisk)) //下载文件
+				file.GET("contents", Handlers.File_contents(s.NetworkDisk)) //查看目录
+			}
+
+			forum:=classmember.Group("/forum")//讨论区操作
+			{
+				forum.GET("/history", Handlers.History(s.Forum))                     //查看记录
+				forum.POST("/speak",Handlers.Speak(s.Forum,s.Filter))              //发言
+				forum.GET("/messages",Handlers.Messages(s.Forum))            //查看留言
+			}
+
+			classmember.GET("/chatroom",Handlers.ChatRoom(s.Filter,rooms,s.RankingList))//进入教室
+			classmember.GET("/assignment", Handlers.Assignment(s.Exercise)) //查看任务-限时考试、作业
+
+			teacher:=classmember.Group("/teacher", Middlewares.CheakRole(s.RBAC,"/teacher"))//班级负责人
+			{
+				teacher.POST("/fire", Handlers.Fire(s.KetangpaiDB))                 			//开除某人
+				teacher.POST("/dissolve", Handlers.Dissolve(s.KetangpaiDB,s.Exercise))         //解散班级
+				teacher.POST("/assign_homework", Handlers.Assign_homework(s.Exercise,s.TestBank))//布置作业
+				teacher.GET("/check_test_status", Handlers.Check_test_status(s.Exercise))//查看考试情况
+				teacher.POST("/mark",Handlers.Mark(s.Exercise))//打分
+				teacher.POST("/add",Handlers.Add(s.KetangpaiDB))//把某些人添加进班级
+			}
+
+			student := classmember.Group("/student", Middlewares.CheakRole(s.RBAC,"/student")) //同学
+			{
+				student.GET("/grade", Handlers.Grade(s.Exercise))                       //成绩分析
+				student.GET("/examination_room",Handlers.Examination_room(s.Exercise,s.TestBank))//开始做题
 			}
 		}
 	}

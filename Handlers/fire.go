@@ -12,7 +12,7 @@ import (
 
 func Fire(u KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 	return func(c *gin.Context){
-		classid,err:=getInt("classid",c)
+		classid,err:=getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -21,7 +21,13 @@ func Fire(u KetangpaiDB.KetangpaiDBClient) gin.HandlerFunc {
 		}
 		//自己检查一遍是不是自己的学生
 		var Students []uint32
-		c.ShouldBindJSON(&Students)
+		err=c.ShouldBindJSON(&Students)
+		if err!=nil {
+			c.JSON(http.StatusBadRequest,gin.H{
+				"error":err.Error(),
+			})
+			return
+		}
 		for _,i:=range Students{
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
 			tmp,err:=u.GetUserClass(ctx,&KetangpaiDB.Uid{Uid:i})

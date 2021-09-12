@@ -18,10 +18,12 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KetangpaiDBClient interface {
-	CreateUser(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Uid, error)
-	SetType(ctx context.Context, in *Member, opts ...grpc.CallOption) (*Member, error)
+	CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
+	GetUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Users, error)
+	GetUserInfo(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
+	GetUserName(ctx context.Context, in *Uids, opts ...grpc.CallOption) (*Names, error)
+	SetUserName(ctx context.Context, in *User, opts ...grpc.CallOption) (*Name, error)
 	GetUserClass(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Classid, error)
-	GetUserType(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Typecode, error)
 	CreateClass(ctx context.Context, in *Class, opts ...grpc.CallOption) (*Class, error)
 	GetClassInfo(ctx context.Context, in *Classid, opts ...grpc.CallOption) (*Class, error)
 	GetClassTeacher(ctx context.Context, in *Classid, opts ...grpc.CallOption) (*Uid, error)
@@ -40,8 +42,8 @@ func NewKetangpaiDBClient(cc grpc.ClientConnInterface) KetangpaiDBClient {
 	return &ketangpaiDBClient{cc}
 }
 
-func (c *ketangpaiDBClient) CreateUser(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Uid, error) {
-	out := new(Uid)
+func (c *ketangpaiDBClient) CreateUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
 	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/create_user", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -49,9 +51,36 @@ func (c *ketangpaiDBClient) CreateUser(ctx context.Context, in *Uid, opts ...grp
 	return out, nil
 }
 
-func (c *ketangpaiDBClient) SetType(ctx context.Context, in *Member, opts ...grpc.CallOption) (*Member, error) {
-	out := new(Member)
-	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/set_type", in, out, opts...)
+func (c *ketangpaiDBClient) GetUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Users, error) {
+	out := new(Users)
+	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/get_users", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ketangpaiDBClient) GetUserInfo(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/get_user_info", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ketangpaiDBClient) GetUserName(ctx context.Context, in *Uids, opts ...grpc.CallOption) (*Names, error) {
+	out := new(Names)
+	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/get_user_name", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *ketangpaiDBClient) SetUserName(ctx context.Context, in *User, opts ...grpc.CallOption) (*Name, error) {
+	out := new(Name)
+	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/set_user_name", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,15 +90,6 @@ func (c *ketangpaiDBClient) SetType(ctx context.Context, in *Member, opts ...grp
 func (c *ketangpaiDBClient) GetUserClass(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Classid, error) {
 	out := new(Classid)
 	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/get_user_class", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ketangpaiDBClient) GetUserType(ctx context.Context, in *Uid, opts ...grpc.CallOption) (*Typecode, error) {
-	out := new(Typecode)
-	err := c.cc.Invoke(ctx, "/ketangpaiDB.ketangpaiDB/get_user_type", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -152,10 +172,12 @@ func (c *ketangpaiDBClient) AddStudent(ctx context.Context, in *Member, opts ...
 // All implementations must embed UnimplementedKetangpaiDBServer
 // for forward compatibility
 type KetangpaiDBServer interface {
-	CreateUser(context.Context, *Uid) (*Uid, error)
-	SetType(context.Context, *Member) (*Member, error)
+	CreateUser(context.Context, *User) (*User, error)
+	GetUsers(context.Context, *Empty) (*Users, error)
+	GetUserInfo(context.Context, *User) (*User, error)
+	GetUserName(context.Context, *Uids) (*Names, error)
+	SetUserName(context.Context, *User) (*Name, error)
 	GetUserClass(context.Context, *Uid) (*Classid, error)
-	GetUserType(context.Context, *Uid) (*Typecode, error)
 	CreateClass(context.Context, *Class) (*Class, error)
 	GetClassInfo(context.Context, *Classid) (*Class, error)
 	GetClassTeacher(context.Context, *Classid) (*Uid, error)
@@ -171,17 +193,23 @@ type KetangpaiDBServer interface {
 type UnimplementedKetangpaiDBServer struct {
 }
 
-func (UnimplementedKetangpaiDBServer) CreateUser(context.Context, *Uid) (*Uid, error) {
+func (UnimplementedKetangpaiDBServer) CreateUser(context.Context, *User) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedKetangpaiDBServer) SetType(context.Context, *Member) (*Member, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetType not implemented")
+func (UnimplementedKetangpaiDBServer) GetUsers(context.Context, *Empty) (*Users, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
+}
+func (UnimplementedKetangpaiDBServer) GetUserInfo(context.Context, *User) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserInfo not implemented")
+}
+func (UnimplementedKetangpaiDBServer) GetUserName(context.Context, *Uids) (*Names, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserName not implemented")
+}
+func (UnimplementedKetangpaiDBServer) SetUserName(context.Context, *User) (*Name, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetUserName not implemented")
 }
 func (UnimplementedKetangpaiDBServer) GetUserClass(context.Context, *Uid) (*Classid, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserClass not implemented")
-}
-func (UnimplementedKetangpaiDBServer) GetUserType(context.Context, *Uid) (*Typecode, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserType not implemented")
 }
 func (UnimplementedKetangpaiDBServer) CreateClass(context.Context, *Class) (*Class, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateClass not implemented")
@@ -221,7 +249,7 @@ func RegisterKetangpaiDBServer(s grpc.ServiceRegistrar, srv KetangpaiDBServer) {
 }
 
 func _KetangpaiDB_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Uid)
+	in := new(User)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -233,25 +261,79 @@ func _KetangpaiDB_CreateUser_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/ketangpaiDB.ketangpaiDB/create_user",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KetangpaiDBServer).CreateUser(ctx, req.(*Uid))
+		return srv.(KetangpaiDBServer).CreateUser(ctx, req.(*User))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _KetangpaiDB_SetType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Member)
+func _KetangpaiDB_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(KetangpaiDBServer).SetType(ctx, in)
+		return srv.(KetangpaiDBServer).GetUsers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/ketangpaiDB.ketangpaiDB/set_type",
+		FullMethod: "/ketangpaiDB.ketangpaiDB/get_users",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KetangpaiDBServer).SetType(ctx, req.(*Member))
+		return srv.(KetangpaiDBServer).GetUsers(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KetangpaiDB_GetUserInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KetangpaiDBServer).GetUserInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ketangpaiDB.ketangpaiDB/get_user_info",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KetangpaiDBServer).GetUserInfo(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KetangpaiDB_GetUserName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Uids)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KetangpaiDBServer).GetUserName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ketangpaiDB.ketangpaiDB/get_user_name",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KetangpaiDBServer).GetUserName(ctx, req.(*Uids))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KetangpaiDB_SetUserName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KetangpaiDBServer).SetUserName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ketangpaiDB.ketangpaiDB/set_user_name",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KetangpaiDBServer).SetUserName(ctx, req.(*User))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -270,24 +352,6 @@ func _KetangpaiDB_GetUserClass_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KetangpaiDBServer).GetUserClass(ctx, req.(*Uid))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _KetangpaiDB_GetUserType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Uid)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(KetangpaiDBServer).GetUserType(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ketangpaiDB.ketangpaiDB/get_user_type",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(KetangpaiDBServer).GetUserType(ctx, req.(*Uid))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -448,16 +512,24 @@ var KetangpaiDB_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _KetangpaiDB_CreateUser_Handler,
 		},
 		{
-			MethodName: "set_type",
-			Handler:    _KetangpaiDB_SetType_Handler,
+			MethodName: "get_users",
+			Handler:    _KetangpaiDB_GetUsers_Handler,
+		},
+		{
+			MethodName: "get_user_info",
+			Handler:    _KetangpaiDB_GetUserInfo_Handler,
+		},
+		{
+			MethodName: "get_user_name",
+			Handler:    _KetangpaiDB_GetUserName_Handler,
+		},
+		{
+			MethodName: "set_user_name",
+			Handler:    _KetangpaiDB_SetUserName_Handler,
 		},
 		{
 			MethodName: "get_user_class",
 			Handler:    _KetangpaiDB_GetUserClass_Handler,
-		},
-		{
-			MethodName: "get_user_type",
-			Handler:    _KetangpaiDB_GetUserType_Handler,
 		},
 		{
 			MethodName: "create_class",

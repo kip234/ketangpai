@@ -10,6 +10,7 @@ import (
 	"KeTangPai/services/Email"
 	"KeTangPai/services/Filter"
 	"KeTangPai/services/Forum"
+	"KeTangPai/services/RBAC"
 	"KeTangPai/services/RankingList"
 )
 
@@ -26,7 +27,9 @@ type Services struct{
 	RankingList RankingList.RankingListClient
 	Email Email.EmailClient
 	KetangpaiDB KetangpaiDB.KetangpaiDBClient
+	RBAC RBAC.RBACClient
 }
+
 var services=Services{
 	Filter:   Filter.NewFilterConn(),
 	JWT:      JWT.NewJWTConn(),
@@ -38,4 +41,5 @@ var services=Services{
 	RankingList:RankingList.NewRankingListConn(),
 	Email: Email.NewEmailConn(),
 	KetangpaiDB: KetangpaiDB.NewKetangpaiDBConn(),
+	RBAC: RBAC.NewRBACConn(),
 }

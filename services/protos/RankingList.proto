@@ -24,7 +24,7 @@ message members{
 }
 
 message rankings{
-  repeated uint64 rank=1;
+  repeated int64 rank=1;
 }
 
 message flushin{
@@ -36,7 +36,7 @@ message flushin{
 
 message flushout{
   string member=1;//刷新对象
-  uint64 ranking=2;//刷新后排名
+  int64 ranking=2;//刷新后排名-不是uint64类型(受Redis框架返回值影响)
 }
 
 message listinfo{

@@ -55,7 +55,7 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 	default:
 	}
 	//给部分字段赋上特殊值
-	DefaultJwt.Payload.Aud=U.GetUid()
+	DefaultJwt.Payload.Aud=U.Id
 	DefaultJwt.Payload.Iat=time.Now().Unix()
 	header,err:=json.Marshal(DefaultJwt.Header)
 	if err!=nil {
@@ -75,7 +75,7 @@ func (j *JwtService) RefreshToken(c context.Context,U *Juser) (*Token, error) {
 		[]byte(Header1+ "."+
 			Payload1+ "."))
 	t:=Token{Content: Header1+"."+Payload1+"."+base64.StdEncoding.EncodeToString(hash.Sum(nil))}
-	err=j.redis.SET(U.GetUid(),t.Content)
+	err=j.redis.SET(U.Id,t.Content)
 	if err!=nil {
 		Log.Send("JWT.RefreshToken.error",err.Error())
 	}
@@ -92,8 +92,6 @@ func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
 	}
 	hps:=strings.Split(t.Content,".")//分割token的三部分
 	if len(hps)!=3 {//长度不够？
-		//Log.Send("JWT.CheckToken.error",err.Error())
-		//log.Printf("CheckToken> RefreshHP Signature error\n")
 		return &Juser{},fmt.Errorf("RefreshHP Signature error")
 	}
 
@@ -112,7 +110,7 @@ func (j *JwtService) CheckToken(c context.Context,t *Token) (*Juser, error) {
 		//log.Printf("CheckToken> inconsistent with record\n")
 		return &Juser{},errors.New("inconsistent with record")
 	}
-	return &Juser{Uid: DefaultJwt.Payload.Aud},err
+	return &Juser{Id: DefaultJwt.Payload.Aud},err
 }
 
 //清除JWT记录
@@ -124,7 +122,7 @@ func (j *JwtService) DelJwt(c context.Context,in *Juser) (*Token, error){
 		return &Token{},errors.New("timeout")
 	default:
 	}
-	err:=j.redis.DEL(strconv.Itoa(int(in.Uid)))
+	err:=j.redis.DEL(strconv.Itoa(int(in.Id)))
 	if err!=nil {
 		Log.Send("JWT.DelJwt.error",err.Error())
 	}

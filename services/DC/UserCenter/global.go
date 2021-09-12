@@ -7,22 +7,21 @@ import (
 
 var DB *gorm.DB
 
-const Addr="localhost:8086"
+const Addr="localhost:8087"
 
 //sql
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="123456"
+	SqlUserPwd="root"
 	SqlAddr=":3306"
 )
 
 //储存对象
 type Userdb struct {
-	Uid     uint32   `form:"uid" json:"uid" gorm:"primaryKey"`
-	Name    string	`form:"name" json:"name" gorm:"not null"`
+	Id     uint32   `form:"uid" json:"uid" gorm:"primaryKey"`
 	Pwd     string	`binding:"required" form:"pwd" json:"pwd" gorm:"not null"`
-	Email string    `form:"email" json:"email" gorm:"not null;unique"`
+	Email string    `binding:"required" form:"email" json:"email" gorm:"not null;unique"`
 }
 
 func InitGorm() {

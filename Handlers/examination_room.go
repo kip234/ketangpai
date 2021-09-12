@@ -2,8 +2,9 @@ package Handlers
 
 import (
 	"KeTangPai/services/DC/Exercise"
-	"KeTangPai/services/Filter"
+	"KeTangPai/services/DC/TestBank"
 	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.HandlerFunc {
+func Examination_room(e Exercise.ExerciseClient,t TestBank.TestBankClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		tmp,ok:=c.GetQuery("eid")
 		if !ok||tmp==""{
@@ -28,12 +29,22 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 			})
 			return
 		}
-		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
+		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit)
 		re,err:=e.GetExercisec(ctx,&Exercise.I{I: uint32(eid)})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{
 				"error":err.Error(),
 			})
+			return
+		}
+
+		anss:=make(map[uint32]string)
+		err=json.Unmarshal(re.Ans,&anss)
+		if err!=nil {
+			c.JSON(http.StatusInternalServerError,gin.H{
+				"error":err.Error(),
+			})
+			log.Println(err.Error())
 			return
 		}
 
@@ -44,17 +55,18 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 			})
 			return
 		}
-		if re.Typ==Exercise.TimeLimit{//限时型
-			re.Begin=time.Now().Unix()
-			re.End=re.Begin+int64(re.Duration)
-		}
 
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
 			})
 			return
+		}
+
+		if re.Typ==Exercise.TimeLimit{//限时型
+			re.Begin=time.Now().Unix()
+			re.End=re.Begin+int64(re.Duration)
 		}
 
 		//开始建立websocket
@@ -81,6 +93,7 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 		}
 
 		go func(ct context.Context) {
+			var ans []Exercise.SubCont
 			for{
 				select{
 					case <-ct.Done():
@@ -88,18 +101,29 @@ func Examination_room(e Exercise.ExerciseClient,f Filter.FilterClient) gin.Handl
 						conn.Close()
 						return
 					default:
-						_,p,err:=conn.ReadMessage()
+						conn.ReadJSON(&ans)
 						if err!=nil{//认为客户断开
 							conn.Close()
 							return
 						}
-						re,err:=f.Process(context.Background(),&Filter.FilterData{Data: p})
-						if err!=nil{//
-							conn.WriteJSON("The server is faulty. The link is down")
-							conn.Close()
-							return
+						content:=make([]string,len(ans))
+						for i,_:=range ans{
+							if s,ok:=anss[ans[i].Testid];ok{
+								if s==ans[i].Content{//答案正确
+									ans[i].Status=true
+								}else{
+									ans[i].Status=false
+								}
+							}
+							p,err:=json.Marshal(ans[i])
+							if err!=nil{//认为客户断开
+								conn.Close()
+								return
+							}
+							content[i]=string(p)
 						}
-						e.SubmitAns(context.Background(),&Exercise.Submit{Exerciseid: uint32(eid),Uploaderid: uint32(uid),Contents: string(re.Data)})
+						ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit)
+						e.SubmitAns(ctx,&Exercise.Submit{Exerciseid: uint32(eid),Uploaderid: uid,Contents: content})
 						conn.WriteJSON("submit successfully")
 				}
 			}

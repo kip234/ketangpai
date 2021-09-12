@@ -8,7 +8,6 @@ service UserCenter{
   rpc get_user_info(id) returns(uuser){};//获取用户所有信息
   rpc get_user_info_by_email(s)returns(uuser){};//参照邮箱返回用户信息
   rpc get_user_pwd(id)returns(s){};//获取密码
-  rpc get_user_name(id)returns(s){};//获取名字
   rpc get_user_email(id)returns(s){};//获取联系方式
   rpc user_is_Exist(s)returns(right){};//判断用户是否存在:以邮箱为标准
 }
@@ -26,8 +25,7 @@ message right{
 }
 
 message uuser{
-  uint32 uid=2;
-  string name=1;
-  string pwd=3;
-  string email=6;
+  uint32 id=1;
+  string pwd=2;
+  string email=3;
 }

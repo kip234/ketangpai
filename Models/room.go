@@ -7,13 +7,13 @@ import (
 //实时交流用的房间结构
 
 type Room struct{
-	num int32
+	num uint32
 	name string//标识
 	in chan *Out//等待输入消息
-	links map[int32] *websocket.Conn
+	links map[uint32] *websocket.Conn
 }
 
-func (r *Room)Add(uid int32,conn *websocket.Conn){
+func (r *Room)Add(uid uint32,conn *websocket.Conn){
 	if _,ok:=r.links[uid];!ok{
 		r.num+=1
 	}else{
@@ -23,7 +23,7 @@ func (r *Room)Add(uid int32,conn *websocket.Conn){
 	r.links[uid]=conn
 }
 
-func (r *Room)Del(uid int32){
+func (r *Room)Del(uid uint32){
 	if _,ok:=r.links[uid];ok{
 		r.num-=1
 	}
@@ -34,7 +34,7 @@ func (r *Room)Chan() chan *Out{
 	return r.in
 }
 
-func (r *Room)IsExit(uid int32) (ok bool) {
+func (r *Room)IsExit(uid uint32) (ok bool) {
 	_,ok=r.links[uid]
 	return
 }
@@ -49,6 +49,9 @@ func (r *Room)Run(){
 			data.Online=r.num//刷新在线人数
 			if len(data.To)!=0 {
 				for _,i:=range data.To{
+					if _,ok:=r.links[i];!ok{
+						continue
+					}
 					err:=r.links[i].WriteJSON(data)
 					if err!=nil {//认为用户断开
 						r.Del(i)
@@ -70,7 +73,7 @@ func (r *Room)Run(){
 	}
 }
 
-func (r *Room)ConnNum()int32{
+func (r *Room)ConnNum()uint32{
 	return r.num
 }
 
@@ -79,6 +82,6 @@ func NewRoom(Name string) *Room {
 		num: 0,
 		name: Name,
 		in:make(chan *Out),
-		links:make(map[int32] *websocket.Conn),
+		links:make(map[uint32] *websocket.Conn),
 	}
 }

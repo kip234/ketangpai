@@ -14,7 +14,7 @@ func Grade(e  Exercise.ExerciseClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		s:=c.DefaultQuery("sid","")
 		if s==""{
-			uid,err:=getInt("uid",c)
+			uid,err:=getUint("uid",c)
 			if err!=nil {
 				c.JSON(http.StatusBadRequest,gin.H{
 					"error":err.Error(),

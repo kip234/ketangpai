@@ -20,7 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type TestBankClient interface {
 	Upload(ctx context.Context, in *Test, opts ...grpc.CallOption) (*Test, error)
 	Download(ctx context.Context, opts ...grpc.CallOption) (TestBank_DownloadClient, error)
-	GenerateTest(ctx context.Context, in *Testconf, opts ...grpc.CallOption) (TestBank_GenerateTestClient, error)
+	GenerateTest(ctx context.Context, in *Testconf, opts ...grpc.CallOption) (*Tests, error)
+	GetAns(ctx context.Context, in *Testids, opts ...grpc.CallOption) (*Anss, error)
 }
 
 type testBankClient struct {
@@ -71,36 +72,22 @@ func (x *testBankDownloadClient) Recv() (*Test, error) {
 	return m, nil
 }
 
-func (c *testBankClient) GenerateTest(ctx context.Context, in *Testconf, opts ...grpc.CallOption) (TestBank_GenerateTestClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TestBank_ServiceDesc.Streams[1], "/TestBank.TestBank/generate_test", opts...)
+func (c *testBankClient) GenerateTest(ctx context.Context, in *Testconf, opts ...grpc.CallOption) (*Tests, error) {
+	out := new(Tests)
+	err := c.cc.Invoke(ctx, "/TestBank.TestBank/generate_test", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &testBankGenerateTestClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
+	return out, nil
 }
 
-type TestBank_GenerateTestClient interface {
-	Recv() (*Testid, error)
-	grpc.ClientStream
-}
-
-type testBankGenerateTestClient struct {
-	grpc.ClientStream
-}
-
-func (x *testBankGenerateTestClient) Recv() (*Testid, error) {
-	m := new(Testid)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
+func (c *testBankClient) GetAns(ctx context.Context, in *Testids, opts ...grpc.CallOption) (*Anss, error) {
+	out := new(Anss)
+	err := c.cc.Invoke(ctx, "/TestBank.TestBank/get_ans", in, out, opts...)
+	if err != nil {
 		return nil, err
 	}
-	return m, nil
+	return out, nil
 }
 
 // TestBankServer is the server API for TestBank service.
@@ -109,7 +96,8 @@ func (x *testBankGenerateTestClient) Recv() (*Testid, error) {
 type TestBankServer interface {
 	Upload(context.Context, *Test) (*Test, error)
 	Download(TestBank_DownloadServer) error
-	GenerateTest(*Testconf, TestBank_GenerateTestServer) error
+	GenerateTest(context.Context, *Testconf) (*Tests, error)
+	GetAns(context.Context, *Testids) (*Anss, error)
 	mustEmbedUnimplementedTestBankServer()
 }
 
@@ -123,8 +111,11 @@ func (UnimplementedTestBankServer) Upload(context.Context, *Test) (*Test, error)
 func (UnimplementedTestBankServer) Download(TestBank_DownloadServer) error {
 	return status.Errorf(codes.Unimplemented, "method Download not implemented")
 }
-func (UnimplementedTestBankServer) GenerateTest(*Testconf, TestBank_GenerateTestServer) error {
-	return status.Errorf(codes.Unimplemented, "method GenerateTest not implemented")
+func (UnimplementedTestBankServer) GenerateTest(context.Context, *Testconf) (*Tests, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateTest not implemented")
+}
+func (UnimplementedTestBankServer) GetAns(context.Context, *Testids) (*Anss, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAns not implemented")
 }
 func (UnimplementedTestBankServer) mustEmbedUnimplementedTestBankServer() {}
 
@@ -183,25 +174,40 @@ func (x *testBankDownloadServer) Recv() (*Testid, error) {
 	return m, nil
 }
 
-func _TestBank_GenerateTest_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Testconf)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
+func _TestBank_GenerateTest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Testconf)
+	if err := dec(in); err != nil {
+		return nil, err
 	}
-	return srv.(TestBankServer).GenerateTest(m, &testBankGenerateTestServer{stream})
+	if interceptor == nil {
+		return srv.(TestBankServer).GenerateTest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TestBank.TestBank/generate_test",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestBankServer).GenerateTest(ctx, req.(*Testconf))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-type TestBank_GenerateTestServer interface {
-	Send(*Testid) error
-	grpc.ServerStream
-}
-
-type testBankGenerateTestServer struct {
-	grpc.ServerStream
-}
-
-func (x *testBankGenerateTestServer) Send(m *Testid) error {
-	return x.ServerStream.SendMsg(m)
+func _TestBank_GetAns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Testids)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestBankServer).GetAns(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/TestBank.TestBank/get_ans",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestBankServer).GetAns(ctx, req.(*Testids))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // TestBank_ServiceDesc is the grpc.ServiceDesc for TestBank service.
@@ -215,6 +221,14 @@ var TestBank_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "upload",
 			Handler:    _TestBank_Upload_Handler,
 		},
+		{
+			MethodName: "generate_test",
+			Handler:    _TestBank_GenerateTest_Handler,
+		},
+		{
+			MethodName: "get_ans",
+			Handler:    _TestBank_GetAns_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -222,11 +236,6 @@ var TestBank_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _TestBank_Download_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
-		},
-		{
-			StreamName:    "generate_test",
-			Handler:       _TestBank_GenerateTest_Handler,
-			ServerStreams: true,
 		},
 	},
 	Metadata: "TestBank.proto",

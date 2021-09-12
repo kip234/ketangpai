@@ -20,6 +20,12 @@ func File_download(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			})
 			return
 		}
+		if s==""{
+			c.JSON(http.StatusBadRequest,gin.H{
+				"error":"fileid == nil",
+			})
+			return
+		}
 		fileid,err:=strconv.Atoi(s)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{

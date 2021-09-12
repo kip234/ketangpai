@@ -16,13 +16,13 @@ type Messagedb struct{
 
 var DB *gorm.DB
 
-const Addr="localhost:8089"
+const Addr="localhost:8090"
 
 //sql
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="123456"
+	SqlUserPwd="root"
 	SqlAddr=":3306"
 )
 

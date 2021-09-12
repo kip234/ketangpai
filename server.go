@@ -12,6 +12,7 @@ import (
 	"KeTangPai/services/Filter"
 	"KeTangPai/services/Forum"
 	"KeTangPai/services/Log"
+	"KeTangPai/services/RBAC"
 	"KeTangPai/services/RankingList"
 )
 
@@ -27,8 +28,9 @@ func main()  {
 	go Email.Run()
 	Log.Run()
 	go KetangpaiDB.Run()
+	go RBAC.Run()
 
-	rooms:=make(map[int32]*Models.Room)
+	rooms:=make(map[uint32]*Models.Room)
 
 	server:= BuildRouter(services,rooms)
 	server.Run(Addr)

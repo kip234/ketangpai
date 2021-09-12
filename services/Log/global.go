@@ -3,7 +3,7 @@ package Log
 //package.method.type....
 //type : info/err...
 
-const mqAddr="amqp://#$%:*^&@:5672/"
+const mqAddr="amqp://kip:kip@121.4.76.240:5672/"
 
 //交换机信息
 const (

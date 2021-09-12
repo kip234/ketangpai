@@ -5,15 +5,13 @@ import (
 	"KeTangPai/services/DC/TestBank"
 	"context"
 	"github.com/gin-gonic/gin"
-	"io"
 	"net/http"
 	"strconv"
-	"time"
 )
 //不止作业，考试和作业没有区分
 func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		uid, err := getInt("uid", c) //获取当前用户UID
+		uid, err := getUint("uid", c) //获取当前用户UID
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
@@ -21,7 +19,7 @@ func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.H
 			return
 		}
 
-		classid, err := getInt("classid", c) //获取用户的班级
+		classid, err := getUint("classid", c) //获取用户的班级
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
@@ -52,13 +50,12 @@ func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.H
 			return
 		}
 		//补全信息
-		tmp.Ownerid = uint32(uid)
-		tmp.Classid = uint32(classid)
+		tmp.Ownerid = uid
+		tmp.Classid = classid
 
 		var re *Exercise.ExerciseData
 
 		if auto == "1" {//自动生成
-			tmp.Content=""
 			subjective, ok := c.GetQuery("subjective")
 			if !ok {
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -89,80 +86,19 @@ func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.H
 				return
 			}
 
-			discipline, ok := c.GetQuery("discipline") //科目
-			if !ok {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"error": "missing necessary parameter",
-				})
-				return
-			}
-			dis,err:=strconv.Atoi(discipline)
+			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit)
+			ids,err:=t.GenerateTest(ctx,&TestBank.Testconf{SubjectiveItem: uint32(sub),ObjectiveItem: uint32(obj),Discipline: tmp.Discipline})
 			if err!=nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
 				})
 				return
 			}
-
-			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			ids,err:=t.GenerateTest(ctx,&TestBank.Testconf{SubjectiveItem: uint32(sub),ObjectiveItem: uint32(obj),Discipline: uint32(dis)})
-			if err!=nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
-			ctx,_=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			contents,err:=t.Download(ctx)
-			if err!=nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
-				})
-				return
-			}
-
-			go func(){
-				for  {
-					id,err:=ids.Recv()
-					if err==io.EOF {
-						ids.CloseSend()
-						contents.CloseSend()
-						break
-					}
-					if err!=nil {
-						ids.CloseSend()
-						c.JSON(http.StatusBadRequest, gin.H{
-							"error": err.Error(),
-						})
-						return
-					}
-					err=contents.Send(id)
-					if err!=nil {
-						contents.CloseSend()
-						c.JSON(http.StatusBadRequest, gin.H{
-							"error": err.Error(),
-						})
-						return
-					}
-				}
-			}()
-			index:=1
-			for  {
-				content,err:=contents.Recv()
-				if err==io.EOF{
-					break
-				}
-				if err!=nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"error": err.Error(),
-					})
-					return
-				}
-				tmp.Content+="\r\n"+strconv.Itoa(index)+"."+content.Content
-				index+=1
-			}
+			tmp.Content=append(tmp.Content,ids.Tests...)//追加自动生成的内容
+			tmp.Ans=ids.Ans
 		}
-		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
+
+		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit)
 		re, err= e.AddExercise(ctx, &Exercise.ExerciseData{
 			Classid:tmp.Classid,
 			Ownerid:tmp.Ownerid,
@@ -172,6 +108,7 @@ func Assign_homework(e  Exercise.ExerciseClient,t TestBank.TestBankClient) gin.H
 			End:tmp.End,
 			Duration:tmp.Duration,
 			Name:tmp.Name,
+			Ans: tmp.Ans,
 		}) //添加记录
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{

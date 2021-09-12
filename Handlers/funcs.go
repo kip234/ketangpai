@@ -6,16 +6,16 @@ import (
 )
 
 //用于从上下文中取出UID
-func getInt(key string,c *gin.Context) (uid int32,err error) {
+func getUint(key string,c *gin.Context) (uid uint32,err error) {
 	v,ok:=c.Get(key)
 	if !ok {
-		uid=-1
+		uid=0
 		err = fmt.Errorf("Missing %s field",key)
 		return
 	}
-	uid,ok = v.(int32)
+	uid,ok = v.(uint32)
 	if !ok {
-		uid=-1
+		uid=0
 		err = fmt.Errorf("Assertion failure")
 		return
 	}

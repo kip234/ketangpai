@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const Addr		= ":8084"
+const Addr		= ":8085"
 const TransmissionUnit=1024//bytes
 
 var sql *gorm.DB
@@ -14,7 +14,7 @@ var sql *gorm.DB
 const (
 	SqlName="ketangpai"
 	SqlUserName="root"
-	SqlUserPwd="123456"
+	SqlUserPwd="root"
 	SqlAddr=":3306"
 )
 

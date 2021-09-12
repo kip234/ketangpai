@@ -17,36 +17,93 @@ func newKetangpaiDBService() *KetangpaiDBService {
 }
 
 //创建用户
-func(u *KetangpaiDBService)CreateUser(c context.Context,in *Uid) (*Uid, error){
+func(u *KetangpaiDBService)CreateUser(c context.Context,in *User) (*User, error){
 	Log.Send("KetangpaiDB.CreateUser.info",in)
 	select {
 	case <-c.Done():
 		Log.Send("KetangpaiDB.CreateUser.error","timeout")
-		return &Uid{},errors.New("timeout")
+		return &User{},errors.New("timeout")
 	default:
 	}
-	//tmp:=Memberdb{Uid: in.Uid}
-	err:=u.db.Model(Memberdb{}).Create(in).Error
+	tmp:=Memberdb{Id:in.Id,Uid: in.Uid,Classid: in.Classid,Name: in.Name}
+	err:=u.db.Model(Memberdb{}).Create(&tmp).Error
 	if err!=nil{
 		Log.Send("KetangpaiDB.CreateUser.error",err.Error())
 	}
-	return in,err
+	return &User{Id: tmp.Id,Uid: tmp.Uid,Classid: tmp.Classid,Name: tmp.Name},err
 }
 
-//设置用户类型
-func(u *KetangpaiDBService)SetType(c context.Context,in *Member) (*Member, error){
-	Log.Send("KetangpaiDB.SetType.info",in)
+//获取用户列表
+func(u *KetangpaiDBService)GetUsers(c context.Context,in *Empty) (*Users, error){
+	Log.Send("KetangpaiDB.GetUsers.info",in)
 	select {
 	case <-c.Done():
-		Log.Send("KetangpaiDB.SetType.error","timeout")
-		return &Member{},errors.New("timeout")
+		Log.Send("KetangpaiDB.GetUsers.error","timeout")
+		return &Users{},errors.New("timeout")
 	default:
 	}
-	err:=u.db.Model(&Memberdb{}).Where("uid=?",in.Uid).Update("type",in.Type).Error
-	if err!=nil{
-		Log.Send("KetangpaiDB.SetType.error",err.Error())
+	var us []*User
+	err:=u.db.Model(Memberdb{}).Find(&us).Error
+	if err!=nil {
+		Log.Send("KetangpaiDB.GetUsers.error",err.Error())
 	}
-	return in,err
+	return &Users{Users: us},err
+}
+
+//获取用户所有信息
+func(u *KetangpaiDBService)GetUserInfo(c context.Context,in *User) (*User, error){
+	Log.Send("KetangpaiDB.GetUserInfo.info",in)
+	select {
+	case <-c.Done():
+		Log.Send("KetangpaiDB.GetUserInfo.error","timeout")
+		return &User{},errors.New("timeout")
+	default:
+	}
+	tmp:=Memberdb{}
+	err:=u.db.Model(Memberdb{}).Where(in).Find(&tmp).Error
+	if err!=nil {
+		Log.Send("KetangpaiDB.GetUserInfo.error",err.Error())
+	}
+	return &User{Uid: tmp.Uid,Name: tmp.Name,Id: tmp.Id,Classid: tmp.Classid},err
+}
+
+//获取名字
+func(u *KetangpaiDBService)GetUserName(c context.Context,in *Uids) (*Names, error){
+	Log.Send("KetangpaiDB.GetUserName.info",in)
+	select {
+	case <-c.Done():
+		Log.Send("KetangpaiDB.GetUserName.error","timeout")
+		return &Names{},errors.New("timeout")
+	default:
+	}
+	name:=make([]string,len(in.Uids))
+	for i,_:=range in.Uids{
+		var tmp string
+		err:=u.db.Model(Memberdb{}).Where("uid=?",in.Uids[i]).Select("name").Find(&tmp).Error
+		if err!=nil {
+			Log.Send("KetangpaiDB.GetUserName.error",err.Error())
+			return &Names{},err
+		}
+		name[i]=tmp
+	}
+
+	return &Names{Names: name},nil
+}
+
+//修改用户名
+func(u *KetangpaiDBService)SetUserName(c context.Context,in *User) (*Name, error){
+	Log.Send("KetangpaiDB.SetUserName.info",in)
+	select {
+	case <-c.Done():
+		Log.Send("KetangpaiDB.SetUserName.error","timeout")
+		return &Name{},errors.New("timeout")
+	default:
+	}
+	err:=u.db.Model(Memberdb{}).Where("uid=?",in.Uid).Update("name",in.Name).Error
+	if err!=nil {
+		Log.Send("KetangpaiDB.SetUserName.error",err.Error())
+	}
+	return &Name{Name: in.Name},err
 }
 
 //凭借UID获取用户所处班级
@@ -64,23 +121,6 @@ func(u *KetangpaiDBService)GetUserClass(c context.Context,in *Uid) (*Classid, er
 		Log.Send("KetangpaiDB.GetUserClass.error",err.Error())
 	}
 	return &Classid{Classid:class},err
-}
-
-//凭借UID获取用户类型
-func(u *KetangpaiDBService)GetUserType(c context.Context,in *Uid) (*Typecode, error){
-	Log.Send("KetangpaiDB.GetUserType.info",in)
-	select {
-	case <-c.Done():
-		Log.Send("KetangpaiDB.GetUserType.error","timeout")
-		return &Typecode{Typecode:0},errors.New("timeout")
-	default:
-	}
-	var typ uint32
-	err:=u.db.Model(&Memberdb{}).Where("uid=?",in.Uid).Select("type").Find(&typ).Error
-	if err!=nil {
-		Log.Send("KetangpaiDB.GetUserType.error",err.Error())
-	}
-	return &Typecode{Typecode:typ},err
 }
 
 ///创建一个班级

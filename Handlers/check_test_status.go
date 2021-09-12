@@ -14,7 +14,7 @@ func Check_test_status(e Exercise.ExerciseClient) gin.HandlerFunc {
 	return func(c *gin.Context){
 		s:=c.DefaultQuery("id","")//获取前面传来的考试ID
 		if s==""{//如果没有就列出该班级的所有考试记录
-			classid,err:=getInt("classid",c)
+			classid,err:=getUint("classid",c)
 			if err!=nil {
 				c.JSON(http.StatusBadRequest,gin.H{
 					"error":err.Error(),
@@ -22,7 +22,7 @@ func Check_test_status(e Exercise.ExerciseClient) gin.HandlerFunc {
 				return
 			}
 			ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
-			re,err:=e.GetExercises(ctx,&Exercise.I{I: uint32(classid)})//获取考试记录
+			re,err:=e.GetExercises(ctx,&Exercise.I{I: classid})//获取考试记录
 			if err!=nil {
 				c.JSON(http.StatusInternalServerError,gin.H{
 					"error":err.Error(),

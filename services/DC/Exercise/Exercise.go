@@ -3,9 +3,11 @@ package Exercise
 import (
 	"KeTangPai/services/Log"
 	"context"
+	"encoding/json"
 	"errors"
 	"gorm.io/gorm"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 )
@@ -21,7 +23,7 @@ func newExerciseService()*ExerciseService{
 	return &ExerciseService{db:sql}
 }
 
-//根据考试号获取考试详情-不含题目内容
+//根据考试号获取考试详情-不含题目内容与答案
 func(e *ExerciseService)GetExercise(c context.Context,in *I) (*ExerciseData, error){
 	Log.Send("Exercise.GetExercise.info",in)
 	select {
@@ -48,7 +50,8 @@ func(e *ExerciseService)GetExercise(c context.Context,in *I) (*ExerciseData, err
 		Name: re.Name,
 	},err
 }
-//根据考试号获取考试详情-含题目内容
+
+//根据考试号获取考试详情-含题目内容与答案
 func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, error){
 	Log.Send("Exercise.GetExercisec.info",in)
 	select {
@@ -57,30 +60,47 @@ func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, er
 		return &ExerciseData{},errors.New("timeout")
 	default:
 	}
-	//获取题目列表储存路径
-	var location string
-	err:=e.db.Model(Exercisedb{}).Where("id=?",in.I).Select("location").Find(&location).Error
-	if err!=nil{
-		Log.Send("Exercise.GetExercisec.error",err.Error())
-		return &ExerciseData{},err
-	}
+
 	//获取考试信息
 	re:=Exercisedb{}
-	err=e.db.Model(Exercisedb{}).Where("id=?",in.I).Find(&re).Error
+	err:=e.db.Model(Exercisedb{}).Where("id=?",in.I).Find(&re).Error
 	if err!=nil{
 		Log.Send("Exercise.GetExercisec.error",err.Error())
 		return &ExerciseData{},err
 	}
-	file,err:=os.Open(location)
+	//log.Println(re)
+	//读取内容
+	file,err:=os.Open(re.Location)
 	if err!=nil{
 		Log.Send("Exercise.GetExercisec.error",err.Error())
 		return &ExerciseData{},err
 	}
 	b,err:=ioutil.ReadAll(file)
+	file.Close()
 	if err!=nil{
 		Log.Send("Exercise.GetExercisec.error",err.Error())
 		return &ExerciseData{},err
 	}
+	var content []string
+	err=json.Unmarshal(b,&content)
+	if err!=nil{
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		return &ExerciseData{},err
+	}
+
+	//读取答案
+	file,err=os.Open(re.AnsLocation)
+	if err!=nil{
+		log.Println(re.Location)
+		return &ExerciseData{},err
+	}
+	b,err=ioutil.ReadAll(file)
+	file.Close()
+	if err!=nil{
+		Log.Send("Exercise.GetExercisec.error",err.Error())
+		return &ExerciseData{},err
+	}
+
 	return &ExerciseData{
 		Id:re.Id,
 		Typ: re.Typ,
@@ -90,9 +110,11 @@ func(e *ExerciseService)GetExercisec(c context.Context,in *I) (*ExerciseData, er
 		End:re.End,
 		Duration:re.Duration,
 		Name: re.Name,
-		Content: string(b),
+		Content: content,
+		Ans: b,
 	},err
 }
+
 //根据班级号获取考试列表
 func(e *ExerciseService)GetExercises(in *I,stream Exercise_GetExercisesServer) error{
 	Log.Send("Exercise.GetExercises.info",in)
@@ -116,6 +138,7 @@ func(e *ExerciseService)GetExercises(in *I,stream Exercise_GetExercisesServer) e
 	}
 	return nil
 }
+
 //添加一次考试
 func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*ExerciseData, error){
 	Log.Send("Exercise.AddExercise.info",in)
@@ -132,6 +155,7 @@ func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*Exerci
 			return err
 		}
 		in.Id=tmp.Id
+		//存储内容
 		location:="./exercise/"+strconv.Itoa(int(in.Id))+".exc"
 		err=tx.Model(Exercisedb{}).Where("id=?",in.Id).Update("location",location).Error//更新存储路径
 		if err!=nil {
@@ -141,11 +165,31 @@ func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*Exerci
 		if err!=nil {
 			return err
 		}
-		defer file.Close()
-		_,err=file.WriteString(in.Content)//存入内容
+		b,err:=json.Marshal(in.Content)
 		if err!=nil {
 			return err
 		}
+		_,err=file.WriteString(string(b))//存入内容
+		if err!=nil {
+			return err
+		}
+		file.Close()
+		//存储答案
+		location="./exercise/"+strconv.Itoa(int(in.Id))+".ans"
+		err=tx.Model(Exercisedb{}).Where("id=?",in.Id).Update("ans_location",location).Error//更新存储路径
+		if err!=nil {
+			return err
+		}
+		file,err=os.Create(location)//创建本地文件
+		if err!=nil {
+			return err
+		}
+		_,err=file.Write(in.Ans)//存入内容
+		if err!=nil {
+			return err
+		}
+		file.Close()
+
 		return nil
 	})
 	if err!=nil {
@@ -153,6 +197,7 @@ func(e *ExerciseService)AddExercise(c context.Context,in *ExerciseData) (*Exerci
 	}
 	return in,err
 }
+
 //学生提交一次考试记录
 func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 	Log.Send("Exercise.SubmitAns.info",in)
@@ -172,8 +217,12 @@ func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 			return &I{},err
 		}
 		defer file.Close()
-		file.WriteString(in.Contents)
-		return &I{},nil
+		b,err:=json.Marshal(in.Contents)
+		if err!=nil {
+			return &I{},err
+		}
+		_,err=file.WriteString(string(b))
+		return &I{},err
 	}
 	//之前没有提交
 	err=e.db.Transaction(func(tx *gorm.DB)error{
@@ -197,7 +246,12 @@ func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 			return err
 		}
 		defer file.Close()
-		_,err=file.WriteString(in.Contents)
+		b,err:=json.Marshal(in.Contents)
+		if err!=nil{
+			Log.Send("Exercise.SubmitAns.error",err.Error())
+			return err
+		}
+		_,err=file.WriteString(string(b))
 		if err!=nil {
 			Log.Send("Exercise.SubmitAns.error",err.Error())
 			return err
@@ -209,7 +263,8 @@ func(e *ExerciseService)SubmitAns(c context.Context,in *Submit) (*I, error){
 	}
 	return &I{},err
 }
-//根据考试ID获取答案
+
+//根据考试ID获取答案-指老师的提交记录
 func(e *ExerciseService)GetKey(c context.Context,in *I) (*Submit, error){
 	Log.Send("Exercise.GetKey.info",in)
 	select {
@@ -250,9 +305,16 @@ func(e *ExerciseService)GetKey(c context.Context,in *I) (*Submit, error){
 		Log.Send("Exercise.GetKey.error",err.Error())
 		return &Submit{},err
 	}
-	re.Contents=string(b)//添加读取到的内容
+	var content []string
+	err=json.Unmarshal(b,&content)
+	if err!=nil {
+		Log.Send("Exercise.GetKey.error",err.Error())
+		return &Submit{},err
+	}
+	re.Contents=content//添加读取到的内容
 	return &re,err
 }
+
 //给学生打分
 func(e *ExerciseService)SetScore(c context.Context,in *Score) (*Empty1, error){
 	Log.Send("Exercise.SetScore.info",in)
@@ -269,6 +331,7 @@ func(e *ExerciseService)SetScore(c context.Context,in *Score) (*Empty1, error){
 	}
 	return &Empty1{},err
 }
+
 //学生根据提交记录获取本次得分
 func(e *ExerciseService)GetScore(c context.Context,in *I) (*Score, error){
 	Log.Send("Exercise.GetScore.info",in)
@@ -286,6 +349,7 @@ func(e *ExerciseService)GetScore(c context.Context,in *I) (*Score, error){
 	}
 	return &Score{Value: v},err
 }
+
 //学生根据自己的ID获取自己的所有提交记录
 func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
 	Log.Send("Exercise.GetScores.info",in)
@@ -307,11 +371,17 @@ func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
 			Log.Send("Exercise.GetScores.error",err.Error())
 			return err
 		}
+		var content []string
+		err=json.Unmarshal(b,&content)
+		if err!=nil {
+			Log.Send("Exercise.GetScores.error",err.Error())
+			return err
+		}
 		err=stream.Send(&Submit{
 			Id:i.Id,
 			Uploaderid:i.Uploaderid,
 			Exerciseid:i.Exerciseid,
-			Contents:string(b),
+			Contents:content,
 			Value:i.Value,
 		})
 		if err!=nil {
@@ -321,6 +391,7 @@ func(e *ExerciseService)GetScores(in *I,stream Exercise_GetScoresServer) error{
 	}
 	return nil
 }
+
 //老师根据考试ID获取本次班级得分情况
 func(e *ExerciseService)GetClassScores(in *I,stream Exercise_GetClassScoresServer) error{
 	Log.Send("Exercise.GetClassScores.info",in)
@@ -347,6 +418,7 @@ func(e *ExerciseService)GetClassScores(in *I,stream Exercise_GetClassScoresServe
 	}
 	return nil
 }
+
 //老师根据考试ID获取本次提交情况
 func(e *ExerciseService)GetClassSubmit(in *I,stream Exercise_GetClassSubmitServer) error{
 	Log.Send("Exercise.GetClassSubmit.info",in)
@@ -370,16 +442,23 @@ func(e *ExerciseService)GetClassSubmit(in *I,stream Exercise_GetClassSubmitServe
 			return err
 		}
 		file.Close()
+		var content []string
+		err=json.Unmarshal(b,&content)
+		if err!=nil {
+			Log.Send("Exercise.GetClassSubmit.error",err.Error())
+			return err
+		}
 		stream.Send(&Submit{
 			Id: i.Id,
 			Uploaderid: i.Uploaderid,
 			Exerciseid: i.Exerciseid,
-			Contents: string(b),
+			Contents: content,
 			Value:i.Value,
 		})
 	}
 	return nil
 }
+
 //根据考试ID删除考试记录-试题，提交记录等
 func(e *ExerciseService)DelExercise(c context.Context,in *I) (*Empty1, error){
 	Log.Send("Exercise.DelExercise.info",in)
@@ -427,6 +506,7 @@ func(e *ExerciseService)DelExercise(c context.Context,in *I) (*Empty1, error){
 	}
 	return &Empty1{},err
 }
+
 //根据班级ID删除该班级所有记录
 func(e *ExerciseService)DelExercises(c context.Context,in *I) (*Empty1, error){
 	Log.Send("Exercise.DelExercises.info",in)

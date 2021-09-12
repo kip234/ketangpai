@@ -10,7 +10,7 @@ import (
 
 func Testbank_upload(t TestBank.TestBankClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid,err:=getInt("uid",c)
+		uid,err:=getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -19,6 +19,7 @@ func Testbank_upload(t TestBank.TestBankClient)gin.HandlerFunc{
 		}
 		test:=TestBank.Testdb{}
 		err=c.ShouldBind(&test)
+		//log.Println(err.Error())
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -38,7 +39,7 @@ func Testbank_upload(t TestBank.TestBankClient)gin.HandlerFunc{
 			return
 		}
 		
-		test.Uploader=uint32(uid)
+		test.Uploader=uid
 		ctx,_:=context.WithTimeout(context.Background(),serviceTimeLimit*time.Second)
 		re,err:=t.Upload(ctx,&TestBank.Test{
 			Id:test.Id,
@@ -48,6 +49,7 @@ func Testbank_upload(t TestBank.TestBankClient)gin.HandlerFunc{
 			Name:test.Name,
 			Uploader:test.Uploader,
 			Discipline: test.Discipline,
+			Withans: test.Withans,
 		})
 		if err!=nil {
 			c.JSON(http.StatusInternalServerError,gin.H{

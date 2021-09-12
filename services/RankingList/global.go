@@ -2,7 +2,7 @@ package RankingList
 
 import "KeTangPai/Models/Redis"
 
-const Addr=":8090"
+const Addr=":8091"
 
 var DefaultRedis = Redis.RedisPool{
 	Read 		:"localhost:6379",

@@ -14,7 +14,7 @@ const TransmissionUnit=1024//bytes-每次传输的单位大小
 
 func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 	return func(c *gin.Context){
-		uid,err:= getInt("uid",c)
+		uid,err:= getUint("uid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),
@@ -22,7 +22,7 @@ func File_upload(n NetworkDisk.NetworkDiskClient)gin.HandlerFunc{
 			return
 		}
 
-		classid,err:= getInt("classid",c)
+		classid,err:= getUint("classid",c)
 		if err!=nil {
 			c.JSON(http.StatusBadRequest,gin.H{
 				"error":err.Error(),

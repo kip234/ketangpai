@@ -9,8 +9,6 @@ import (
 func Send(routingKey string,body interface{}) error {
 	message:=fmt.Sprintf("%+v\n",body)
 
-
-
 	conn, err := amqp.Dial(mqAddr)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()

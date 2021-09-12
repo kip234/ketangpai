@@ -2,7 +2,6 @@ package Log
 
 import (
 	"github.com/streadway/amqp"
-	"log"
 	"time"
 )
 
@@ -78,6 +77,5 @@ func recieveInfo(){
 		}
 	}()
 
-	log.Printf(" [*] Waiting for logs. To exit press CTRL+C")
 	<-forever
 }
